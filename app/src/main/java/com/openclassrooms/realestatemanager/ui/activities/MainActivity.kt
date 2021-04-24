@@ -1,8 +1,10 @@
-package com.openclassrooms.realestatemanager
+package com.openclassrooms.realestatemanager.ui.activities
 
 import android.support.v7.app.AppCompatActivity
 import android.widget.TextView
 import android.os.Bundle
+import com.openclassrooms.realestatemanager.R
+import com.openclassrooms.realestatemanager.Utils
 
 class MainActivity : AppCompatActivity() {
     private var textViewMain: TextView? = null
