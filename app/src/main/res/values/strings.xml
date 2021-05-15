@@ -1,3 +1,33 @@
 <resources>
     <string name="app_name">Real Estate Manager</string>
+    <string name="enter_email_edittext">Email</string>
+    <string name="enter_password_edittext">Password</string>
+    <string name="loginTextview">Login</string>
+    <string name="create_account_text">Create Account</string>
+    <string name="forgot_password_text">Forgot Password</string>
+    <string name="surface">Surface</string>
+    <string name="of_rooms"># of Rooms</string>
+    <string name="address">Address</string>
+    <string name="status">Status</string>
+    <string name="add_listing">Add Listing</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="type_of_listing">Type of Listing (Apt, House, Loft, etc) </string>
+    <string name="price_of_property_usd">Price of property (USD)</string>
+    <string name="enter_surface_area_in_m2">Surface Area (in m2)</string>
+    <string name="number_of_rooms">Number of Rooms</string>
+    <string name="description_of_listing">Description of Listing</string>
+    <string name="choose_image">Choose Image</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="image_description">Image Description</string>
+    <string name="address_city_state_country">Address / City / State / Country</string>
+    <string name="points_of_interest">Points of Interest Nearby (Schools, businesses, parks, etc) </string>
+    <string name="status_of_property_sold_or_for_sale">Status of Property (Sold or For Sale)</string>
+    <string name="date_put_on_market">Date (put on market)</string>
+    <string name="date_sold_if_property_has_already_been_sold">Date Sold (if property has already been sold)</string>
+    <string name="name_of_real_estate_agent_selling_property">Name of Real Estate Agent selling property</string>
+    <string name="save_listing">Save Listing</string>
+    <string name="useremail">UserEmail</string>
+    <string name="logout">Logout</string>
+
 </resources>

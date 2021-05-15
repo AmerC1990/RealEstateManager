@@ -12,6 +12,13 @@ class App: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
         database = Room.databaseBuilder(this,ListingsDatabase::class.java, "listing_db").build()
+
+//        startKoin {
+//            androidLogger()
+//            androidContext(this@App)
+//            modules(dataModule + appModule)
+//        }
     }
 }

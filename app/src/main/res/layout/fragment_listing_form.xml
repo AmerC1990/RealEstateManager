@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.fragments.ListingFormFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonChooseImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="0dp"
+            android:layout_margin="20dp"
+            android:text="@string/choose_image"
+            android:textColor="@color/myWhite"
+            android:backgroundTint="@color/myGrey"/>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_margin="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:src="@color/myYellow"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonUploadImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:layout_marginTop="0dp"
+            android:text="@string/upload_image"
+            android:textColor="@color/myWhite"
+            android:backgroundTint="@color/colorPrimary"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterImageDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/image_description"
+            android:inputType="text" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/editTextEnterType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:hint="@string/type_of_listing"
+        android:inputType="text"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/price_of_property_usd"
+            android:inputType="number"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterSurfaceArea"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/enter_surface_area_in_m2"
+            android:inputType="number"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterNumberOfRooms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/number_of_rooms"
+            android:inputType="number"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/description_of_listing"
+            android:inputType="text"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/address_city_state_country"
+            android:inputType="text"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterPointsOfInterest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/points_of_interest"
+            android:inputType="text"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/status_of_property_sold_or_for_sale"
+            android:inputType="text"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterDatePutOnMarket"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/date_put_on_market"
+            android:inputType="date"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterSaleDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/date_sold_if_property_has_already_been_sold"
+            android:inputType="date"/>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextEnterNameOfAgent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="@string/name_of_real_estate_agent_selling_property"
+            android:inputType="text"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonSaveListing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:text="@string/save_listing"
+            android:textColor="@color/myWhite"
+            android:backgroundTint="@color/myGreen"/>
+
+</LinearLayout>
+
+</ScrollView>
