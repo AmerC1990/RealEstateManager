@@ -1,14 +1,22 @@
 package com.openclassrooms.realestatemanager.adapters
 
+import android.graphics.Color
+import android.os.Bundle
+import android.provider.Settings.Global.getString
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.storage.FirebaseStorage
 import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
+import com.openclassrooms.realestatemanager.ui.fragments.ListingFormFragment
+import com.openclassrooms.realestatemanager.ui.fragments.ViewAndUpdateListingFragment
 import kotlinx.android.synthetic.main.listing_row.view.*
 
 class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>() {
@@ -33,55 +41,60 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
     }
 
     class Viewholder(view: View): RecyclerView.ViewHolder(view) {
-        val statusTextview = view.statusTextview
-        val addressTextview = view.addressTextview
-        val numberOfRoomsTextview = view.numberOfRoomsTextview
-        val surfaceAreaTextview = view.surfaceAreaTextview
-        val listingPhotoImageview = view.listingPhoto
+        private val statusTextview: TextView = view.statusTextview
+        private val addressTextview: TextView = view.addressTextview
+        private val numberOfRoomsTextview: TextView = view.numberOfRoomsTextview
+        private val surfaceAreaTextview: TextView = view.surfaceAreaTextview
+        private val listingPhotoImageview: ImageView = view.listingPhoto
 
         fun bind(data: ListingEntity) {
             statusTextview.text = data.status
-            addressTextview.text = data.address
-            numberOfRoomsTextview.text = data.numberOfRooms
-            surfaceAreaTextview.text = data.surfaceArea
-            val storage = FirebaseStorage.getInstance()
-//            val gsReference = storage.getReferenceFromUrl("images/0f1b3e7d-ea0e-4dc79c93-69d3abb1554e.jpg")
-//            val storage = FirebaseStorage.getInstance().reference.child("images/0f1b3e7d-ea0e-4dc79c93-69d3abb1554e.jpg")
-//            val imageref = FirebaseStorage.getInstance().reference.child("images/$data.photoReference.jpg")
-//            val storageReference = FirebaseStorage.getInstance().reference.child("images/${data.photoReference}.jpg")
-            storage.getReference("images/").listAll().addOnSuccessListener {
-                for (file in it.items) {
-                    file.downloadUrl.addOnSuccessListener {uri->
-                        Glide.with(listingPhotoImageview)
-                                .load(uri)
-                                .into(listingPhotoImageview)
-                    }
-
-                }
+            if (statusTextview.text.toString().contains("For Sale")) {
+                statusTextview.setTextColor(Color.parseColor("#20AA32"))
+            } else if (statusTextview.text.toString().contains("Sold")) {
+                statusTextview.setTextColor(Color.parseColor("#EF0A0A"))
             }
-//
-//            storage.reference.child("images/${data.photoReference}.jpg").downloadUrl.addOnSuccessListener {uri->
-//                Glide.with(listingPhotoImageview)
-//                        .load(uri)
-//                        .into(listingPhotoImageview)
-//            }.addOnFailureListener {
-//                Log.d("whyerror", it.toString())
-//            }
+            addressTextview.text = String.format("\n" + addressTextview.context.getString(R.string.address) + ":  " + "\n" + "\n" + data.address)
+            numberOfRoomsTextview.text = String.format("\n" + numberOfRoomsTextview.context.getString(R.string.number_of_rooms) + ": " + "\n" + "\n" + data.numberOfRooms)
+            surfaceAreaTextview.text = String.format("\n" + surfaceAreaTextview.context.getString(R.string.surface) + ": " + "\n" + "\n" + data.surfaceArea)
+
+            val allPhotoUrls = listOf(data.photoReference,
+                    data.photoReference2,
+                    data.photoReference3,
+                    data.photoReference4,
+                    data.photoReference5,
+                    data.photoReference6,
+                    data.photoReference7,
+                    data.photoReference8,
+                    data.photoReference9,
+                    data.photoReference10)
 
 
-//            val irr = storage.reference.child("images/0f1b3e7d-ea0e-4dc79c93-69d3abb1554e.jpg").downloadUrl.addOnSuccessListener {
-//                    Log.d("erroruri", ir.toString())
+            val nullablePhotoUrl = allPhotoUrls.find { it != "" }
+            val photoUrl = nullablePhotoUrl ?: ""
 
+            Glide.with(listingPhotoImageview)
+                    .load(photoUrl)
+                    .centerCrop()
+                    .error(R.drawable.noimageavailable)
+                    .into(listingPhotoImageview)
 
+            itemView.setOnClickListener {
+                val id = data.id.toString()
+                val bundle = Bundle()
+                bundle.putString("listing_id", id)
+                val activity = itemView.context as AppCompatActivity
 
+                val transaction = activity.supportFragmentManager.beginTransaction()
+                val fragment = ViewAndUpdateListingFragment()
+                fragment.arguments = bundle
+                transaction.replace(R.id.fragmentContainer, fragment)
+                transaction.addToBackStack(null)
+                transaction.commit()
 
-//            }
-
-
-
-
-
+            }
 
         }
     }
+
 }

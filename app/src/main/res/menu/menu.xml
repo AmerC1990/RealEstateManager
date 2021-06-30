@@ -7,14 +7,25 @@
     <item
         android:id="@+id/userEmailItem"
         android:title="@string/useremail"
-        app:showAsAction="never">
-    </item>
+        app:showAsAction="never"></item>
 
     <item
         android:id="@+id/logoutItem"
         android:title="@string/logout"
         app:showAsAction="never"
-        android:icon="@drawable/logouticon">
-    </item>
+        android:icon="@drawable/logouticon"></item>
 
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/search_icon"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="always|collapseActionView"
+        android:title="@string/search_listings"
+        android:tooltipText="@string/search_listings" />
+
+    <item
+        android:id="@+id/action_filter"
+        app:showAsAction="always|collapseActionView"
+        android:icon="@drawable/filter_icon"
+        android:title="@string/filter_listings"></item>
 </menu>

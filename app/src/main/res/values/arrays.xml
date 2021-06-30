@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="selected_item">Selected item:</string>
+    <array name="initial_slider_values_price">
+        <item>100000.0</item>
+        <item>1000000.0</item>
+    </array>
+
+    <array name="initial_slider_values_surfacearea">
+        <item>100.0</item>
+        <item>500.0</item>
+    </array>
+
+    <array name="initial_slider_values_photos">
+        <item>0.0</item>
+        <item>10.0</item>
+    </array>
+
+    <array name="type_of_listing_spinner">
+        <item>Select Type of Listing (Apartment, House, Loft)</item>
+        <item>House</item>
+        <item>Apartment</item>
+        <item>Loft</item>
+    </array>
+
+    <array name="points_of_interest_nearby_spinner">
+        <item>Restaurant</item>
+        <item>School</item>
+        <item>Hospital</item>
+        <item>Bar</item>
+        <item>Park</item>
+    </array>
+
+    <array name="status_of_property_spinner">
+        <item>Select Status of Property (For Sale or Sold)</item>
+        <item>For Sale</item>
+        <item>Sold</item>
+    </array>
+</resources>

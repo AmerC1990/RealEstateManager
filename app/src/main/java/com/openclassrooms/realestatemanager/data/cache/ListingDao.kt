@@ -1,18 +1,19 @@
 package com.openclassrooms.realestatemanager.data.cache
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ListingDao {
     @Query("SELECT * FROM listing_info ORDER BY id DESC")
-    fun getAllListingInfo(): List<ListingEntity>
+    fun getAllListingInfo(): Flow<List<ListingEntity>>
 
-    @Insert
-    fun insertListing(listing: ListingEntity)
+    @Query("SELECT * FROM listing_info WHERE id=:id ")
+    fun getSingleItem(id: Int): Flow<ListingEntity>
 
-    @Update
-    fun updateListing(listing: ListingEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertListing(listing: ListingEntity): Long
+
+    @Update()
+    fun updateListing(listing: ListingEntity): Int
 }
