@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.util.Patterns
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -56,8 +57,8 @@ class LoginActivity : AppCompatActivity() {
                         editTextEnterEmail.text?.clear()
                         editTextEnterPassword.text?.clear()
                         val intent = Intent(this, MainActivity::class.java)
+                        intent.putExtra("justLoggedIn", "justLoggedIn")
                         loginProgressBar.visibility = View.GONE
-//                        intent.putExtra("fromLogin", "fromLogin")
                         startActivity(intent)
                     }
                     else  -> {

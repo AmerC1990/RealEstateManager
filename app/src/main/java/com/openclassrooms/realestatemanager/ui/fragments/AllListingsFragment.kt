@@ -1,8 +1,8 @@
 package com.openclassrooms.realestatemanager.ui.fragments
 
 import android.app.DatePickerDialog
-import android.app.ProgressDialog
-import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.transition.Slide
@@ -10,24 +10,27 @@ import android.transition.TransitionManager
 import android.util.Log
 import android.view.*
 import android.widget.*
-import androidx.fragment.app.Fragment
 import androidx.activity.addCallback
-import androidx.annotation.ColorInt
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.slider.RangeSlider
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textview.MaterialTextView
 import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.Utils
 import com.openclassrooms.realestatemanager.adapters.RecyclerViewAdapter
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
+import com.openclassrooms.realestatemanager.filter.FilterContext
+import com.openclassrooms.realestatemanager.filter.FilterParams
+import com.openclassrooms.realestatemanager.filter.PriceStrategy
+import com.openclassrooms.realestatemanager.filter.SurfaceStrategy
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import kotlinx.android.synthetic.main.filter_screen.*
 import kotlinx.android.synthetic.main.fragment_all_listings.*
 import kotlinx.android.synthetic.main.fragment_listing_form.*
-import kotlinx.android.synthetic.main.fragment_listing_form.statusOfPropertySpinner
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import org.koin.android.ext.android.inject
 import java.time.LocalDate
@@ -42,45 +45,14 @@ class AllListingsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        Log.d("lifecycle", "onCreateView")
         setHasOptionsMenu(true)
+        val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
+        actionBar.setDisplayHomeAsUpEnabled(false)
         return inflater.inflate(R.layout.fragment_all_listings, container, false)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        Log.d("lifecycle", "onAttach")
-
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d("lifecycle", "onCreate")
-
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("lifecycle", "onPause")
-
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("lifecycle", "onStop")
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("lifecycle", "onResume")
-
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d("lifecycle", "onStart")
-
         overrideOnBackPressed()
         val listingFormFragment = ListingFormFragment()
         if (Utils.isOnline(requireContext())) {
@@ -94,8 +66,6 @@ class AllListingsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        Log.d("lifecycle", "onActivityCreated")
-        showOnlineStatus()
         initRecyclerview()
         attachObservers()
     }
@@ -128,6 +98,7 @@ class AllListingsFragment : Fragment() {
                 popupWindow.exitTransition = slideOut
             }
 
+            // TODO() ViewBinding
             val typeOfListingSpinner = view.findViewById<Spinner>(R.id.typeOfPropertySpinnerFilter)
             val statusOfPropertySpinner = view.findViewById<Spinner>(R.id.statusOfPropertySpinnerFilter)
             val buttonApply = view.findViewById<Button>(R.id.button_apply)
@@ -170,7 +141,7 @@ class AllListingsFragment : Fragment() {
                 // Dismiss the popup window
                 popupWindow.dismiss()
             }
-
+            // TODO() Naming fix up
             val c = Calendar.getInstance()
             val year = c.get(Calendar.YEAR)
             val month = c.get(Calendar.MONTH)
@@ -221,19 +192,19 @@ class AllListingsFragment : Fragment() {
             }
             var priceChanged = false
             priceSlider.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
-                priceMinText.text = rangeSlider.values[0].toString()
-                priceMaxText.text = rangeSlider.values[1].toString()
+                priceMinText.text = rangeSlider.values[0].toString() + "0"
+                priceMaxText.text = rangeSlider.values[1].toString() + "0"
                 priceChanged = true
             }
             var surfaceAreaChanged = false
             surfaceAreaSlider.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
-                surfaceMinText.text = rangeSlider.values[0].toString()
-                surfaceMaxText.text = rangeSlider.values[1].toString()
+                surfaceMinText.text = rangeSlider.values[0].toString().substringBefore(".")
+                surfaceMaxText.text = rangeSlider.values[1].toString().substringBefore(".")
                 surfaceAreaChanged = true
             }
             photoSlider.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
-                photosMixText.text = rangeSlider.values[0].toString()
-                photosMaxText.text = rangeSlider.values[1].toString()
+                photosMixText.text = rangeSlider.values[0].toString().substringBefore(".")
+                photosMaxText.text = rangeSlider.values[1].toString().substringBefore(".")
             }
 
             buttonApply.setOnClickListener {
@@ -251,56 +222,94 @@ class AllListingsFragment : Fragment() {
                         statusOfPropertyText = ""
                     }
                     val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-                    val filteredData = (viewModel.uiState.value as ListingsViewModel.ListingState.Success)
-                            .listing.filter {
 
-                                ((
-                                        it.photoCount in minimumPhotos..maximumPhotos
-                                                &&
-                                                it.pointsOfInterest.replace("[", "").replace("]", "").split(",").map { it.trim() }
-                                                        .containsAll(getCheckedCategories(bar = barCheckbox,
-                                                                park = parkCheckbox,
-                                                                school = schoolCheckbox,
-                                                                restaurant = restaurantCheckbox,
-                                                                hospital = hospitalCheckbox)))
-                                        &&
-                                        it.status.contains(statusOfPropertyText, ignoreCase = true)
-                                        && it.typeOfListing.contains(typeOfListingText, ignoreCase = true)
-                                        && it.address.contains(enterLocationEditText.text.toString()))
-                                        &&
-                                        if (it.dateOnMarket.isNotEmpty() && !beenOnMarketTextview.text.toString().contains("date", ignoreCase = true)) {
-                                            return@filter (LocalDate.parse(it.dateOnMarket.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(beenOnMarketTextview.text.toString().filter { !it.isWhitespace() }, formatter)))
-                                        } else {
-                                            return@filter it.dateOnMarket.isNotEmpty()
-                                        }
-                                        &&
-                                        if (it.saleDate.isNotEmpty() && !beenSoldSinceTextview.text.toString().contains("date", ignoreCase = true)) {
-                                            return@filter (LocalDate.parse(it.saleDate.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(beenSoldSinceTextview.text.toString().filter { !it.isWhitespace() }, formatter)))
-                                        } else {
-                                            return@filter it.saleDate.isNotEmpty()
-                                        }
-                                        &&
-                                        if (it.price.isNotEmpty() && priceChanged) {
-                                            it.price.toDouble() in priceMinText.text.toString().toDouble()..priceMaxText.text.toString().toDouble()
-                                        } else {
-                                            it.price.isNotEmpty()
-                                        }
-                                        &&
-                                        if (it.surfaceArea.isNotEmpty() && surfaceAreaChanged) {
-                                            it.surfaceArea.toDouble() in surfaceMinText.text.toString().toDouble()..surfaceMaxText.text.toString().toDouble()
-                                        } else {
-                                            it.surfaceArea.isNotEmpty()
-                                        }
-                                        &&
-                                        if (editTextEnterLocation.text.toString().isNotEmpty()) {
-                                            it.address.contains(editTextEnterLocation.text.toString())
-                                        } else {
-                                            it.address.isNotEmpty()
-                                        }
-                            }
-                    viewModel.insertListings(filteredData)
-                    recyclerViewAdapter.setListData(filteredData as ArrayList<ListingEntity>)
-                    recyclerViewAdapter.notifyDataSetChanged()
+                    var finalFilteredData = ((viewModel.uiState.value as ListingsViewModel.ListingState.Success).listing)
+//                    val filters = FilterParams(minPrice = priceMinText.text.toString().toDouble(),
+//                            maxPrice = priceMaxText.text.toString().toDouble(),
+//                            minSurfaceArea  = surfaceMinText.text.toString().toDouble(),
+//                            maxSurfaceArea = surfaceMaxText.text.toString().toDouble(),
+//                            minNumberOfPhotos = minimumPhotos.toDouble(),
+//                            maxNumberOfPhotos = maximumPhotos.toDouble(),
+//                            status = statusOfPropertyText,
+//                            type = typeOfListingText,
+//                            location = editTextEnterLocation.text.toString(),
+//                            onMarketSince = beenOnMarketTextview.text.toString(),
+//                            soldSince = beenSoldSinceTextview.text.toString(),
+//                            pointsOfInterest = getCheckedCategories(bar = barCheckbox,
+//                                                                park = parkCheckbox,
+//                                                                school = schoolCheckbox,
+//                                                                restaurant = restaurantCheckbox,
+//                                                                hospital = hospitalCheckbox))
+
+                    val filters = FilterParams.Builder()
+                            .location(editTextEnterLocation.text.toString())
+                            .build()
+
+                    val filteredData = FilterContext()
+                    if (priceChanged) {
+                        // TODO() Builder pattern filter param
+                        // TODO() Unconditionally extract all values from filter forms, sliders, etc filter param object
+                        val priceFilterParam = FilterParams(minPrice = priceMinText.text.toString().toDouble(), maxPrice = priceMaxText.text.toString().toDouble())
+                        val priceFilterContext = FilterContext(PriceStrategy())
+                        finalFilteredData = priceFilterContext.executeStrategy(priceFilterParam, ((viewModel.uiState.value as ListingsViewModel.ListingState.Success).listing))
+                    }
+                    if (surfaceAreaChanged) {
+                        val surfaceAreaFilterParam = FilterParams(minSurfaceArea = surfaceMinText.text.toString().toDouble(), maxSurfaceArea = surfaceMaxText.text.toString().toDouble())
+                        val surfaceAreaFilterContext = FilterContext(SurfaceStrategy())
+                        finalFilteredData = surfaceAreaFilterContext.executeStrategy(surfaceAreaFilterParam, finalFilteredData)
+                    }
+
+
+//                    val filteredData = (viewModel.uiState.value as ListingsViewModel.ListingState.Success)
+//                            .listing.filter {
+//
+//                                ((
+//                                        it.photoCount in minimumPhotos..maximumPhotos
+//                                                &&
+//                                                it.pointsOfInterest.replace("[", "").replace("]", "").split(",").map { it.trim() }
+//                                                        .containsAll(getCheckedCategories(bar = barCheckbox,
+//                                                                park = parkCheckbox,
+//                                                                school = schoolCheckbox,
+//                                                                restaurant = restaurantCheckbox,
+//                                                                hospital = hospitalCheckbox)))
+//                                        &&
+//                                        it.status.contains(statusOfPropertyText, ignoreCase = true)
+//                                        && it.typeOfListing.contains(typeOfListingText, ignoreCase = true)
+//                                        && it.address.contains(enterLocationEditText.text.toString()))
+//                                        &&
+//                                        if (it.dateOnMarket.isNotEmpty() && !beenOnMarketTextview.text.toString().contains("date", ignoreCase = true)) {
+//                                            return@filter (LocalDate.parse(it.dateOnMarket.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(beenOnMarketTextview.text.toString().filter { !it.isWhitespace() }, formatter)))
+//                                        } else {
+//                                            return@filter it.dateOnMarket.isNotEmpty()
+//                                        }
+//                                        &&
+//                                        if (it.saleDate.isNotEmpty() && !beenSoldSinceTextview.text.toString().contains("date", ignoreCase = true)) {
+//                                            return@filter (LocalDate.parse(it.saleDate.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(beenSoldSinceTextview.text.toString().filter { !it.isWhitespace() }, formatter)))
+//                                        } else {
+//                                            return@filter it.saleDate.isNotEmpty()
+//                                        }
+//                                        &&
+//                                        if (it.price.isNotEmpty() && priceChanged) {
+//                                            it.price.toDouble() in priceMinText.text.toString().toDouble()..priceMaxText.text.toString().toDouble()
+//                                        } else {
+//                                            it.price.isNotEmpty()
+//                                        }
+//                                        &&
+//                                        if (it.surfaceArea.isNotEmpty() && surfaceAreaChanged) {
+//                                            it.surfaceArea.toDouble() in surfaceMinText.text.toString().toDouble()..surfaceMaxText.text.toString().toDouble()
+//                                        } else {
+//                                            it.surfaceArea.isNotEmpty()
+//                                        }
+//                                        &&
+//                                        if (editTextEnterLocation.text.toString().isNotEmpty()) {
+//                                            it.address.contains(editTextEnterLocation.text.toString())
+//                                        } else {
+//                                            it.address.isNotEmpty()
+//                                        }
+//                            }
+//                    viewModel.insertListings(filteredData)
+//                    recyclerViewAdapter.setListData(filteredData as ArrayList<ListingEntity>)
+//                    recyclerViewAdapter.notifyDataSetChanged()
                 }
                 popupWindow.dismiss()
             }
@@ -370,21 +379,19 @@ class AllListingsFragment : Fragment() {
     }
 
     private fun attachObservers() {
-        val progressDialog = ProgressDialog(requireContext())
-        progressDialog.setTitle("Loading Listings")
         lifecycleScope.launchWhenCreated {
             viewModel.uiState.collect { uiState ->
                 when (uiState) {
                     is ListingsViewModel.ListingState.Loading -> {
-                        progressDialog.show()
+                        allListingsProgressBar.visibility = View.VISIBLE
                     }
                     is ListingsViewModel.ListingState.Success -> {
                         recyclerViewAdapter.setListData(uiState.listing as ArrayList<ListingEntity>)
                         recyclerViewAdapter.notifyDataSetChanged()
-                        progressDialog.dismiss()
+                        allListingsProgressBar.visibility = View.GONE
                     }
                     is ListingsViewModel.ListingState.Error -> {
-                        progressDialog.dismiss()
+                        allListingsProgressBar.visibility = View.GONE
                     }
                 }
             }
@@ -392,9 +399,11 @@ class AllListingsFragment : Fragment() {
     }
 
     private fun changeFragment(fragment: Fragment) {
+        allListingsProgressBar.visibility = View.VISIBLE
         activity?.supportFragmentManager?.beginTransaction()?.apply {
             replace(R.id.fragmentContainer, fragment)
             .addToBackStack(null)
+            allListingsProgressBar.visibility = View.GONE
             commit()
         }
     }
@@ -410,39 +419,21 @@ class AllListingsFragment : Fragment() {
         }
     }
 
-    private fun showOnlineStatus() {
-        val fromLogin = arguments?.getString("justLoggedIn", null)
-        if (fromLogin != null) {
-            if (Utils.isOnline(requireContext())) {
-                Snackbar
-                        .make(allListingsConstraintLayout, "Connected", Snackbar.LENGTH_SHORT)
-                        .withColor(resources.getColor(R.color.myGreen))
-                        .show()
-            } else if (!Utils.isOnline(requireContext())) {
-                Snackbar
-                        .make(allListingsConstraintLayout, "Offline", Snackbar.LENGTH_SHORT)
-                        .withColor(resources.getColor(R.color.myRed))
-                        .show()
-            }
-        }
-    }
-
-    private fun Snackbar.withColor(@ColorInt colorInt: Int): Snackbar {
-        this.view.setBackgroundColor(colorInt)
-        return this
-    }
-
     private fun overrideOnBackPressed() {
         activity?.onBackPressedDispatcher?.addCallback {
         }
     }
 
-    private fun getCheckedCategories(bar: CheckBox, school: CheckBox, park: CheckBox, restaurant: CheckBox, hospital: CheckBox): List<String> = listOfNotNull(
+    fun getCheckedCategories(bar: CheckBox, school: CheckBox, park: CheckBox, restaurant: CheckBox, hospital: CheckBox): List<String> = listOfNotNull(
             "Bar".takeIf { bar.isChecked },
             "School".takeIf { school.isChecked },
             "Park".takeIf { park.isChecked },
             "Restaurant".takeIf { restaurant.isChecked },
             "Hospital".takeIf { hospital.isChecked }
     )
+
+    interface FilterStrategy {
+        fun filter(vararg param: Any): Flow<ListingEntity>
+    }
 
 }

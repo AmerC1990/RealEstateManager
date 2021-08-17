@@ -315,7 +315,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="20dp"
                     android:hint="@string/price_of_property_usd"
-                    android:inputType="text"
+                    android:inputType="number"
                     android:paddingStart="10dp"
                     android:paddingEnd="10dp" />
 
@@ -325,7 +325,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="20dp"
                     android:hint="@string/enter_surface_area_in_m2"
-                    android:inputType="text"
+                    android:inputType="number"
                     android:paddingStart="10dp"
                     android:paddingEnd="10dp" />
 

@@ -49,11 +49,15 @@
     <string name="close_me">Cancel</string>
     <string name="location">Location</string>
     <string name="city_state_or_country">City, State or Country</string>
-    <string name="_500">500.0</string>
+    <string name="_500">500</string>
     <string name="date">Date</string>
-    <string name="_1000000_0">1000000.0</string>
-    <string name="_0_0">0.0</string>
-    <string name="_10_0">10.0</string>
-    <string name="_100_0">100.0</string>
+    <string name="_1000000_00">1000000.00</string>
+    <string name="_0_0">0.00</string>
+    <string name="_0_">0</string>
+    <string name="_10_">10</string>
+    <string name="_100_">100</string>
     <string name="_100000_0">100000.0</string>
+    <string name="static_maps_api_key">AIzaSyCjjNtiV2d0NKjAmJk-G6Sge8LLQe58f4A</string>
+    <string name="location_disabled_message">Your location is disabled, do you want to enable it?</string>
+    <string name="denied_permission_string">Location permission is required to view your location, please enable it in settings</string>
 </resources>

@@ -17,6 +17,7 @@ import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.ui.fragments.ListingFormFragment
 import com.openclassrooms.realestatemanager.ui.fragments.ViewAndUpdateListingFragment
+import kotlinx.android.synthetic.main.fragment_listing_form.*
 import kotlinx.android.synthetic.main.listing_row.view.*
 
 class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>() {
@@ -46,6 +47,7 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
         private val numberOfRoomsTextview: TextView = view.numberOfRoomsTextview
         private val surfaceAreaTextview: TextView = view.surfaceAreaTextview
         private val listingPhotoImageview: ImageView = view.listingPhoto
+        private val mapImageView: ImageView = view.mapImageView
 
         fun bind(data: ListingEntity) {
             statusTextview.text = data.status
@@ -78,6 +80,17 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
                     .centerCrop()
                     .error(R.drawable.noimageavailable)
                     .into(listingPhotoImageview)
+
+            val address = data.address
+            val url = "https://maps.googleapis.com/maps/api/staticmap?center=" +
+                    "${address}&zoom=15&size=200x200&maptype=satellite&scale=2&markers=size:mid%7Ccolor:red%7C${address}&key=AIzaSyCjjNtiV2d0NKjAmJk-G6Sge8LLQe58f4A"
+
+            Glide.with(mapImageView)
+                    .asBitmap()
+                    .load(url)
+                    .centerCrop()
+                    .error(R.drawable.mapimage)
+                    .into(mapImageView)
 
             itemView.setOnClickListener {
                 val id = data.id.toString()

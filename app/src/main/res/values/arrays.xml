@@ -2,18 +2,18 @@
 <resources>
     <string name="selected_item">Selected item:</string>
     <array name="initial_slider_values_price">
-        <item>100000.0</item>
-        <item>1000000.0</item>
+        <item>0</item>
+        <item>1000000</item>
     </array>
 
     <array name="initial_slider_values_surfacearea">
-        <item>100.0</item>
-        <item>500.0</item>
+        <item>0</item>
+        <item>500</item>
     </array>
 
     <array name="initial_slider_values_photos">
-        <item>0.0</item>
-        <item>10.0</item>
+        <item>0</item>
+        <item>10</item>
     </array>
 
     <array name="type_of_listing_spinner">

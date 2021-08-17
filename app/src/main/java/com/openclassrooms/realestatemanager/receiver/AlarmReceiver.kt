@@ -13,8 +13,11 @@ import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.NotificationTarget
+import com.google.firebase.auth.FirebaseAuth
 import com.openclassrooms.realestatemanager.R
+import com.openclassrooms.realestatemanager.Utils
 import com.openclassrooms.realestatemanager.data.repository.ListingRepository
+import com.openclassrooms.realestatemanager.ui.activities.LoginActivity
 import com.openclassrooms.realestatemanager.ui.activities.MainActivity
 import com.openclassrooms.realestatemanager.viewmodels.SingleListingViewModel
 import kotlinx.coroutines.*
@@ -30,21 +33,25 @@ import java.util.*
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
-
+        val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
         val sharedPreferences = context.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
         val listingId = sharedPreferences.getLong("id", 0L)
         val listingAddress = sharedPreferences.getString("address", null)
         if (listingId != 0L && !listingAddress.isNullOrEmpty()) {
-            fireNotification(id = listingId, context = context, listingAddress = listingAddress)
+            fireNotification(id = listingId, context = context, listingAddress = listingAddress, firebaseAuth = firebaseAuth)
         }
     }
 
     private fun fireNotification(
+            firebaseAuth: FirebaseAuth,
             id: Long,
             context: Context,
             listingAddress: String) {
-        val notificationIntent =
-                Intent(context, MainActivity::class.java)
+        val notificationIntent: Intent = if (firebaseAuth.currentUser?.email.isNullOrEmpty()) {
+            Intent(context, LoginActivity::class.java)
+        } else {
+            Intent(context, MainActivity::class.java)
+        }
         notificationIntent.putExtra("id_from_notification", id.toInt())
         val contentIntent = PendingIntent.getActivity(
                 context, 0,

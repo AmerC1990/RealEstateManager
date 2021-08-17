@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.activity.addCallback
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.firebase.storage.FirebaseStorage
@@ -45,6 +46,8 @@ class ViewAndUpdateListingFragment : Fragment() {
     private val allPhotos = mutableMapOf<Int, String>()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
+        actionBar.setDisplayHomeAsUpEnabled(true)
         return inflater.inflate(R.layout.fragment_view_and_update_listing, container, false)
     }
 
@@ -76,7 +79,6 @@ class ViewAndUpdateListingFragment : Fragment() {
                     startFileChooser()
                 }
             }
-
         } else if (!Utils.isOnline(requireContext())) {
             if (!id.isNullOrEmpty()) {
                 singleListingViewModel.getSingleListing(id.toInt())
@@ -117,6 +119,11 @@ class ViewAndUpdateListingFragment : Fragment() {
                             }
                                     .apply()
                             setAlarm()
+                            delay(1500)
+                            activity?.supportFragmentManager?.beginTransaction()?.apply {
+                                replace(R.id.fragmentContainer, AllListingsFragment())
+                                commit()
+                            }
                         }
                     }
                 }
@@ -474,7 +481,6 @@ class ViewAndUpdateListingFragment : Fragment() {
                 photoEight,
                 photoNine,
                 photoTen).count { !it.isNullOrEmpty() }
-        Log.d("photoCount", photoCount.toString())
 
         val listing = ListingEntity(
                 photoCount = photoCount,
@@ -525,10 +531,7 @@ class ViewAndUpdateListingFragment : Fragment() {
 
     private fun overrideOnBackPressed() {
         activity?.onBackPressedDispatcher?.addCallback {
-            activity?.supportFragmentManager?.beginTransaction()?.apply {
-                replace(R.id.fragmentContainer, AllListingsFragment())
-                commit()
-            }
+            activity?.supportFragmentManager?.popBackStack()
         }
     }
 

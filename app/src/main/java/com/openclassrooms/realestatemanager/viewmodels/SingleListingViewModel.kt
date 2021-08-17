@@ -10,21 +10,21 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class SingleListingViewModel constructor(private val repository: ListingRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow<SingleListingViewModel.SingleListingState>(SingleListingViewModel.SingleListingState.Loading)
-    val uiState: StateFlow<SingleListingViewModel.SingleListingState> = _uiState
+    private val _uiState = MutableStateFlow<SingleListingState>(SingleListingState.Loading)
+    val uiState: StateFlow<SingleListingState> = _uiState
 
     fun getSingleListing(id: Int) {
-        _uiState.value = SingleListingViewModel.SingleListingState.Loading
-        viewModelScope.launch(Dispatchers.IO) {
+        _uiState.value = SingleListingState.Loading
+        viewModelScope.launch(IO) {
             repository.getSingleItem(id).take(1).collect { result ->
-                _uiState.value = SingleListingViewModel.SingleListingState.Success(result)
+                _uiState.value = SingleListingState.Success(result)
             }
         }
     }
 
     fun putPhotoReference(photoCount: Int, photoReference: String) {
         viewModelScope.launch(IO) {
-            _uiState.value = SingleListingViewModel.SingleListingState.SuccessPhoto(photoReference, photoCount)
+            _uiState.value = SingleListingState.SuccessPhoto(photoReference, photoCount)
         }
     }
 

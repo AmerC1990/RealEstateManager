@@ -4,19 +4,19 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.activity.addCallback
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.storage.FirebaseStorage
 import com.openclassrooms.realestatemanager.R
@@ -51,6 +51,8 @@ class ListingFormFragment : Fragment() {
     private val allPhotos = mutableMapOf<Int, String>()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
+        actionBar.setDisplayHomeAsUpEnabled(true)
         return inflater.inflate(R.layout.fragment_listing_form, container, false)
     }
 
@@ -242,6 +244,14 @@ class ListingFormFragment : Fragment() {
                 commit()
             }
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        activity?.supportFragmentManager?.beginTransaction()?.apply {
+            replace(R.id.fragmentContainer, AllListingsFragment())
+            commit()
+        }
+        return true
     }
 
     private fun startFileChooser() {
