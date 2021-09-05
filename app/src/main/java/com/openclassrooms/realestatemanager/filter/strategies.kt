@@ -1,16 +1,8 @@
 package com.openclassrooms.realestatemanager.filter
 
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
-import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-
-//    val filterParam = FilterParams(minPrice  = 100.0, maxPrice = 2000.0)
-//    val filterContext = FilterContext(PriceStrategy())
-//    filterContext.executeStrategy(filterParam, emptyList<ListingEntity>())
 
 class PriceStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
@@ -18,7 +10,7 @@ class PriceStrategy : Strategy {
             if (property.price.isNotEmpty()) {
                 property.price.toDouble() <= param.maxPrice!! && property.price.toDouble() >= param.minPrice!!
             } else {
-                property.price.isNotEmpty()
+                property.id.toString().isNotEmpty()
             }
         }
     }
@@ -63,28 +55,43 @@ class TypeStrategy : Strategy {
 class BeenOnMarketSinceStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-        return data.filter { property ->
-            if (property.dateOnMarket.isNotEmpty() && !param.onMarketSince!!.contains("date", ignoreCase = true)) {
-                return@filter (LocalDate.parse(property.dateOnMarket.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.onMarketSince.filter { !it.isWhitespace() }, formatter)))
-            } else {
-                return@filter property.dateOnMarket.isNotEmpty()
+        if (!param.onMarketSince!!.contains("date", ignoreCase = true)) {
+            for (listing in data) {
+                if (!listing.dateOnMarket.isNullOrEmpty()) {
+                    return data.filter { property ->
+                        return@filter (!property.dateOnMarket.isNullOrEmpty() && LocalDate.parse(property.dateOnMarket.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.onMarketSince.filter { !it.isWhitespace() }, formatter)))
+                    }
+                }
+            }
+        } else if (param.onMarketSince.contains("date", ignoreCase = true)) {
+            return data.filter { property ->
+                return@filter !property.id.toString().isNullOrEmpty()
             }
         }
+        return emptyList()
     }
 }
 
 class BeenSoldSinceStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-        return data.filter { property ->
-            if (property.saleDate.isNotEmpty() && !param.soldSince!!.contains("date", ignoreCase = true)) {
-                return@filter (LocalDate.parse(property.saleDate.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.soldSince.filter { !it.isWhitespace() }, formatter)))
-            } else {
-                return@filter property.saleDate.isNotEmpty()
+        if (!param.soldSince!!.contains("date", ignoreCase = true)) {
+            for (listing in data) {
+                if (!listing.saleDate.isNullOrEmpty()) {
+                    return data.filter { property ->
+                        return@filter (!property.saleDate.isNullOrEmpty() && LocalDate.parse(property.saleDate.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.soldSince.filter { !it.isWhitespace() }, formatter)))
+                    }
+                }
+            }
+        } else if (param.soldSince.contains("date", ignoreCase = true)) {
+            return data.filter { property ->
+                return@filter !property.id.toString().isNullOrEmpty()
             }
         }
+        return emptyList()
     }
 }
+
 
 class PointsOfInterestStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
@@ -103,7 +110,7 @@ class LocationStrategy : Strategy {
             if (param.location.toString().isNotEmpty()) {
                 property.address.contains(param.location!!, ignoreCase = true)
             } else {
-                property.address.isNotEmpty()
+                property.id.toString().isNotEmpty()
             }
         }
     }

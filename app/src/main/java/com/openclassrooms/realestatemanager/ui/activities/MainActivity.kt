@@ -91,6 +91,13 @@ class MainActivity : AppCompatActivity() {
 
         logoutItem?.setOnMenuItemClickListener {
             firebaseAuth.signOut()
+            val sharedPrefs = this.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
+            val editor = sharedPrefs.edit()
+            editor.apply {
+                remove("filter")
+                remove("filterParams")
+            }
+                    .apply()
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             true

@@ -1,6 +1,7 @@
 package com.openclassrooms.realestatemanager.ui.activities
 
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -24,6 +25,14 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
         FirebaseApp.initializeApp(this)
         val animation = AnimationUtils.loadAnimation(this, R.anim.scale_up)
+
+        val sharedPrefs = this.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPrefs.edit()
+        editor.apply {
+            remove("filter")
+            remove("filterParams")
+        }
+                .apply()
 
         createAccountButton.setOnClickListener {
             createAccountButton.startAnimation(animation)

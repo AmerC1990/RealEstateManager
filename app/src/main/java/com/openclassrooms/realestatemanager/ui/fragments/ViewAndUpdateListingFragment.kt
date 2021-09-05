@@ -518,7 +518,7 @@ class ViewAndUpdateListingFragment : Fragment() {
                     .apply()
             delay(1000L)
             setAlarm()
-            updateListingProgressBar.visibility = View.GONE
+//            updateListingProgressBar.visibility = View.GONE
         }
     }
 

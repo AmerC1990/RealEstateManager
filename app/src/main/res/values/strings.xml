@@ -60,4 +60,5 @@
     <string name="static_maps_api_key">AIzaSyCjjNtiV2d0NKjAmJk-G6Sge8LLQe58f4A</string>
     <string name="location_disabled_message">Your location is disabled, do you want to enable it?</string>
     <string name="denied_permission_string">Location permission is required to view your location, please enable it in settings</string>
+    <string name="reset_filters">Reset filters</string>
 </resources>
