@@ -116,6 +116,37 @@ class LocationStrategy : Strategy {
     }
 }
 
+class SearchStrategy : Search {
+    override fun filterSearch(param: SearchParams, data: List<ListingEntity>): List<ListingEntity> {
+        return data.filter { property ->
+            property.descriptionOfListing.contains(
+                    param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    ||
+                    property.address.contains(param.searchViewQuery.toString(),
+                            ignoreCase = true)
+                    || property.pointsOfInterest.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    || property.typeOfListing.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    || property.price.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    || property.photoDescription.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    || property.surfaceArea.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    || property.status.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    || property.realEstateAgent.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    || property.dateOnMarket.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+                    || property.saleDate.contains(param.searchViewQuery.toString(),
+                    ignoreCase = true)
+        }
+    }
+}
+
 
 
 

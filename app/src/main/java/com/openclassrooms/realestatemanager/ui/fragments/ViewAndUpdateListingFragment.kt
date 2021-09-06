@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -83,11 +82,9 @@ class ViewAndUpdateListingFragment : Fragment() {
             if (!id.isNullOrEmpty()) {
                 singleListingViewModel.getSingleListing(id.toInt())
             }
-            buttonEditListingUpdate.visibility = View.GONE
-            buttonSaveListingUpdate.visibility = View.GONE
+            setListingUpdateButtonVisibility()
         }
     }
-
     private fun attachObservers() {
         val typeOfListingSpinner = activity?.findViewById<Spinner>(R.id.typeOfListingSpinnerUpdate)
         val types = resources.getStringArray(R.array.type_of_listing_spinner)
@@ -788,10 +785,10 @@ class ViewAndUpdateListingFragment : Fragment() {
     )
 
     private fun enterDates() {
-        val c = Calendar.getInstance()
-        val year = c.get(Calendar.YEAR)
-        val month = c.get(Calendar.MONTH)
-        val day = c.get(Calendar.DAY_OF_MONTH)
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         val enterForSaleDate = activity?.findViewById<EditText>(R.id.editTextEnterDatePutOnMarketUpdate)
         val enterSoldDate = activity?.findViewById<EditText>(R.id.editTextEnterSaleDateUpdate)
@@ -801,7 +798,7 @@ class ViewAndUpdateListingFragment : Fragment() {
         enterForSaleDate?.setOnClickListener {
             val datePickerDialog = DatePickerDialog(
                     requireContext(),
-                    DatePickerDialog.OnDateSetListener { view, Year, Month, Day ->
+                    { view, Year, Month, Day ->
                         var myMonth = (Month + 1).toString()
                         var myDay = Day.toString()
                         if (myMonth.length < 2) {
@@ -822,7 +819,7 @@ class ViewAndUpdateListingFragment : Fragment() {
         enterSoldDate?.setOnClickListener {
             val datePickerDialog = DatePickerDialog(
                     requireContext(),
-                    DatePickerDialog.OnDateSetListener { view, Year, Month, Day ->
+                    { view, Year, Month, Day ->
                         var myMonth = (Month + 1).toString()
                         var myDay = Day.toString()
                         if (myMonth.length < 2) {
@@ -839,5 +836,10 @@ class ViewAndUpdateListingFragment : Fragment() {
             )
             datePickerDialog.show()
         }
+    }
+
+    private fun setListingUpdateButtonVisibility() {
+        buttonEditListingUpdate.visibility = View.GONE
+        buttonSaveListingUpdate.visibility = View.GONE
     }
 }

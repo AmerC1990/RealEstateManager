@@ -1,14 +1,14 @@
 package com.openclassrooms.realestatemanager.viewmodels
 
 
-import android.content.Context
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.data.repository.ListingRepository
 import com.openclassrooms.realestatemanager.filter.FilterContext
 import com.openclassrooms.realestatemanager.filter.FilterParams
+import com.openclassrooms.realestatemanager.filter.SearchContext
+import com.openclassrooms.realestatemanager.filter.SearchParams
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,6 +19,7 @@ class ListingsViewModel constructor(private val repository: ListingRepository) :
     val uiState: StateFlow<ListingState> = _uiState
 
     fun fetchListings() {
+        _uiState.value = ListingState.Loading
         viewModelScope.launch(IO) {
             repository.getAllListings().collect { result ->
                 _uiState.value = ListingState.Success(result)
@@ -35,14 +36,22 @@ class ListingsViewModel constructor(private val repository: ListingRepository) :
     }
 
     fun filter(filterParams: FilterParams) {
+        _uiState.value = ListingState.Loading
         viewModelScope.launch(IO) {
             repository.getAllListings().collect { result ->
                 val filteredData = FilterContext().executeStrategy(filterParams, result)
                 _uiState.value = ListingState.Success(filteredData)
             }
         }
+    }
 
-
+    fun search(searchParams: SearchParams) {
+        viewModelScope.launch(IO) {
+            repository.getAllListings().collect { result ->
+                val filteredData = SearchContext().executeSearchStrategy(searchParams, result)
+                _uiState.value = ListingState.Success(filteredData)
+            }
+        }
     }
 
     sealed class ListingState {

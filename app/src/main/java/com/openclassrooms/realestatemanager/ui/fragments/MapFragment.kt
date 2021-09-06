@@ -19,6 +19,7 @@ import android.view.*
 import android.widget.*
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -32,14 +33,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.slider.RangeSlider
-import com.google.gson.Gson
 import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.databinding.FilterScreenBinding
 import com.openclassrooms.realestatemanager.filter.FilterParams
+import com.openclassrooms.realestatemanager.filter.SearchParams
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
-import kotlinx.android.synthetic.main.filter_screen.*
-import kotlinx.android.synthetic.main.fragment_all_listings.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -56,347 +55,30 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        setHasOptionsMenu(true)
         val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
         actionBar.setDisplayHomeAsUpEnabled(false)
         val view = inflater.inflate(R.layout.filter_screen, null)
         binding = FilterScreenBinding.bind(view)
-//        val progressBar = inflater.findViewById<ProgressBar>(R.id.mapFragmentProgressBar)
-//        progressBar.visibility = View.VISIBLE
         return inflater.inflate(R.layout.fragment_map, container, false)
-
     }
 
     override fun onStart() {
         super.onStart()
-        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-        val filter = sharedPrefs.getString("filter", null)
-        val filterParams = sharedPrefs.getString("filterParams", null)
-        if (filter.isNullOrEmpty()) {
-            viewModel.fetchListings()
-        } else {
-            val objectMapper = ObjectMapper()
-            val filterParamsObject = objectMapper.readValue(filterParams, FilterParams::class.java)
-            viewModel.filter(filterParams = filterParamsObject)
-        }
-    }
-    // TODO()
-    // filter options menu click not working from map fragment, fix it
-    // add search functionality to map fragment as well
-    // add appropriate progress bars throughout app
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        val filterIcon = menu.findItem(R.id.action_filter)
-        filterIcon?.setOnMenuItemClickListener {
-
-            val popupWindow = PopupWindow(
-                    binding?.root, // Custom view to show in popup window
-                    LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
-                    LinearLayout.LayoutParams.MATCH_PARENT // Window height
-            )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                popupWindow.elevation = 10.0F
-            }
-
-
-            // If API level 23 or higher then execute the code
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                // Create a new slide animation for popup window enter transition
-                val slideIn = Slide()
-                slideIn.slideEdge = Gravity.TOP
-                popupWindow.enterTransition = slideIn
-
-                // Slide animation for popup window exit transition
-                val slideOut = Slide()
-                slideOut.slideEdge = Gravity.RIGHT
-                popupWindow.exitTransition = slideOut
-            }
-
-            val types = resources.getStringArray(R.array.type_of_listing_spinner)
-            val statuses = resources.getStringArray(R.array.status_of_property_spinner)
-
-            val typeAdapter = ArrayAdapter(requireContext(),
-                    android.R.layout.simple_spinner_dropdown_item, types)
-            binding?.typeOfPropertySpinnerFilter?.adapter = typeAdapter
-
-
-            val statusAdapter = ArrayAdapter(requireContext(),
-                    android.R.layout.simple_spinner_dropdown_item, statuses)
-            binding?.statusOfPropertySpinnerFilter?.adapter = statusAdapter
-
-            popupWindow.isFocusable = true
-            popupWindow.update()
-            binding?.buttonClose?.setOnClickListener {
-                // Dismiss the popup window
-                popupWindow.dismiss()
-            }
-
-            val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            binding?.beenOnMarketSinceDatePicker?.setOnClickListener {
-                val datePickerDialog = DatePickerDialog(
-                        requireContext(),
-                        DatePickerDialog.OnDateSetListener { view, Year, Month, Day ->
-                            binding?.beenOnMarketDateTextview?.visibility = View.VISIBLE
-                            var myMonth = (Month + 1).toString()
-                            var myDay = Day.toString()
-                            if (myMonth.length < 2) {
-                                myMonth = "0$myMonth"
-                            }
-                            if (myDay.length < 2) {
-                                myDay = "0$myDay"
-                            }
-                            binding?.beenOnMarketDateTextview?.text = "   $myMonth/$myDay/$Year"
-                        },
-                        year,
-                        month,
-                        day
-                )
-                datePickerDialog.show()
-            }
-
-            binding?.beenSoldSinceDatePicker?.setOnClickListener {
-                val datePickerDialog = DatePickerDialog(
-                        requireContext(),
-                        DatePickerDialog.OnDateSetListener { view, Year, Month, Day ->
-                            binding?.beenSoldSinceTextview?.visibility = View.VISIBLE
-                            var myMonth = (Month + 1).toString()
-                            var myDay = Day.toString()
-                            if (myMonth.length < 2) {
-                                myMonth = "0$myMonth"
-                            }
-                            if (myDay.length < 2) {
-                                myDay = "0$myDay"
-                            }
-                            binding?.beenSoldSinceTextview?.text = "   $myMonth/$myDay/$Year"
-                        },
-                        year,
-                        month,
-                        day
-                )
-                datePickerDialog.show()
-            }
-            binding?.priceSlider?.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
-                binding?.priceMinTextview?.text = rangeSlider.values[0].toString() + "0"
-                binding?.priceMaxTextview?.text = rangeSlider.values[1].toString() + "0"
-            }
-            binding?.surfaceAreaSlider?.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
-                binding?.surfaceMinTextview?.text = rangeSlider.values[0].toString().substringBefore(".")
-                binding?.surfaceMaxTextview?.text = rangeSlider.values[1].toString().substringBefore(".")
-            }
-            binding?.numberOfPhotosSlider?.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
-                binding?.photosMinTextview?.text = rangeSlider.values[0].toString().substringBefore(".")
-                binding?.photosMaxTextview?.text = rangeSlider.values[1].toString().substringBefore(".")
-            }
-
-            binding?.buttonApply?.setOnClickListener {
-                if (viewModel.uiState.value is ListingsViewModel.ListingState.Success) {
-
-                    val minimumPhotos = binding?.photosMinTextview?.text.toString().substringBefore(".").toInt()
-                    val maximumPhotos = binding?.photosMaxTextview?.text.toString().substringBefore(".").toInt()
-
-                    var typeOfListingText = binding?.typeOfPropertySpinnerFilter?.selectedItem.toString()
-
-                    var statusOfPropertyText = binding?.statusOfPropertySpinnerFilter?.selectedItem.toString()
-
-                    if (typeOfListingText.contains("Select")) {
-                        typeOfListingText = ""
-                    }
-                    if (statusOfPropertyText.contains("Select")) {
-                        statusOfPropertyText = ""
-                    }
-
-                    val filterParams = FilterParams(minPrice = binding?.priceMinTextview?.text.toString().toDouble(),
-                            maxPrice = binding?.priceMaxTextview?.text.toString().toDouble(),
-                            minSurfaceArea = binding?.surfaceMinTextview?.text.toString().toDouble(),
-                            maxSurfaceArea = binding?.surfaceMaxTextview?.text.toString().toDouble(),
-                            minNumberOfPhotos = minimumPhotos.toDouble(),
-                            maxNumberOfPhotos = maximumPhotos.toDouble(),
-                            status = statusOfPropertyText,
-                            type = typeOfListingText,
-                            onMarketSince = binding?.beenOnMarketDateTextview?.text.toString(),
-                            soldSince = binding?.beenSoldSinceTextview?.text.toString(),
-                            pointsOfInterest = getCheckedCategories(),
-                            location = binding?.editTextEnterLocation?.text.toString())
-
-                    viewModel.filter(filterParams = filterParams)
-                    val objectMapper = ObjectMapper()
-                    val filterParamsAsString = objectMapper.writeValueAsString(filterParams)
-                    val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-                    val editor = sharedPrefs.edit()
-                    editor.apply {
-                        putString("filter", "filter")
-                        putString("filterParams", filterParamsAsString)
-                    }
-                            .apply()
-                }
-                popupWindow.dismiss()
-            }
-            binding?.resetFiltersTextview?.setOnClickListener {
-                viewModel.fetchListings()
-                val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-                val editor = sharedPrefs.edit()
-                editor.apply {
-                    remove("filter")
-                    remove("filterParams")
-                }
-                        .apply()
-                popupWindow.dismiss()
-            }
-
-            TransitionManager.beginDelayedTransition(allListingsConstraintLayout)
-            popupWindow.showAtLocation(
-                    allListingsConstraintLayout, // Location to display popup window
-                    Gravity.CENTER, // Exact position of layout to display popup
-                    0, // X offset
-                    0 // Y offset
-            )
-            true
-        }
-
-        val searchItem = menu.findItem(R.id.action_search)
-        val searchView: androidx.appcompat.widget.SearchView = searchItem?.actionView as androidx.appcompat.widget.SearchView
-        searchView.queryHint = "Search Listings"
-        searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String): Boolean {
-                if (viewModel.uiState.value is ListingsViewModel.ListingState.Success) {
-                    val filteredData =
-                            (viewModel.uiState.value as ListingsViewModel.ListingState.Success).listing.filter {
-                                it.descriptionOfListing.contains(
-                                        searchView.query,
-                                        ignoreCase = true)
-                                        ||
-                                        it.address.contains(searchView.query,
-                                                ignoreCase = true)
-                                        || it.pointsOfInterest.contains(searchView.query,
-                                        ignoreCase = true)
-                                        || it.typeOfListing.contains(searchView.query,
-                                        ignoreCase = true)
-                                        || it.price.contains(searchView.query,
-                                        ignoreCase = true)
-                                        || it.photoDescription.contains(searchView.query,
-                                        ignoreCase = true)
-                                        || it.surfaceArea.contains(searchView.query,
-                                        ignoreCase = true)
-                                        || it.status.contains(searchView.query,
-                                        ignoreCase = true)
-                                        || it.realEstateAgent.contains(searchView.query,
-                                        ignoreCase = true)
-                                        || it.dateOnMarket.contains(searchView.query,
-                                        ignoreCase = true)
-                                        || it.saleDate.contains(searchView.query,
-                                        ignoreCase = true)
-                            }
-//                    recyclerViewAdapter.setListData(filteredData as ArrayList<ListingEntity>)
-//                    recyclerViewAdapter.notifyDataSetChanged()
-                    when (searchView.query.toString()) {
-                        "" -> {
-//                            recyclerViewAdapter.setListData((viewModel.uiState.value as ListingsViewModel.ListingState.Success).listing as ArrayList<ListingEntity>)
-//                            recyclerViewAdapter.notifyDataSetChanged()
-                        }
-                    }
-                }
-                return false
-            }
-        }
-        )
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-        isLocationOn()
+        overrideOnBackPressed()
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
+        Log.d("map life", "onmapready")
         if (googleMap != null) {
             googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
             map = googleMap
         }
         lifecycleScope.launch(IO) {
             getLocationAccess()
-            attachObservers()
         }
-    }
-
-    private fun attachObservers() {
-        lifecycleScope.launchWhenCreated {
-            viewModel.uiState.collect { uiState ->
-                when (uiState) {
-                    is ListingsViewModel.ListingState.Loading -> {
-                        mapFragmentProgressBar.visibility = View.VISIBLE
-                    }
-                    is ListingsViewModel.ListingState.Success -> {
-                        mapFragmentProgressBar.visibility = View.GONE
-                        val listingData = uiState.listing
-                        val builder = LatLngBounds.builder()
-                        for (item in listingData) {
-                            if (item.address.isNotEmpty()) {
-                                val geocoder = Geocoder(requireContext(), Locale.getDefault())
-                                val address = geocoder.getFromLocationName(item.address, 1)
-                                var markers: Marker?
-                                for (element in address) {
-                                    val latLng = LatLng(element.latitude, element.longitude)
-                                    markers = map.addMarker(
-                                            latLng.let {
-                                                MarkerOptions().position(it)
-                                                        .title(item.address)
-                                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                                            }
-                                    )
-                                    builder.include(markers.position)
-                                    val bounds = builder.build()
-                                    val width = resources.displayMetrics.widthPixels
-                                    val height = resources.displayMetrics.heightPixels
-                                    val padding = (width * 0.10).toInt()
-                                    val cameraUpdate = CameraUpdateFactory.newLatLngBounds(
-                                            bounds,
-                                            width,
-                                            height,
-                                            padding
-                                    )
-                                    map.animateCamera(cameraUpdate)
-                                    geolocalizationButton.setOnClickListener {
-                                        map.animateCamera(cameraUpdate)
-                                    }
-                                }
-                            }
-                            map.setOnMarkerClickListener { it ->
-                                val markerName = it.title
-                                if (markerName?.toString() == "My Location") {
-                                    it.showInfoWindow()
-                                } else {
-                                    val fragment = ViewAndUpdateListingFragment()
-                                    val transaction = activity?.supportFragmentManager?.beginTransaction()
-                                    val bundle = Bundle()
-                                    for (listings in listingData) {
-                                        if (listings.address == markerName) {
-                                            bundle.putString("listing_id", listings.id.toString())
-                                            fragment.arguments = bundle
-                                            transaction?.replace(R.id.fragmentContainer, fragment)
-                                            transaction?.addToBackStack(null)
-                                            transaction?.commit()
-                                        }
-                                    }
-                                }
-                                true
-                            }
-                        }
-                    }
-                    is ListingsViewModel.ListingState.Error -> {
-                        mapFragmentProgressBar.visibility = View.GONE
-                        Toast.makeText(requireContext(), uiState.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-        }
+        fetchData()
+        attachObservers()
     }
 
     private suspend fun getLocationAccess() {
@@ -429,6 +111,255 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun fetchData() {
+        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
+        val filter = sharedPrefs.getString("filter", null)
+        val filterParams = sharedPrefs.getString("filterParams", null)
+        if (filter.isNullOrEmpty()) {
+            viewModel.fetchListings()
+        } else {
+            val objectMapper = ObjectMapper()
+            val filterParamsObject = objectMapper.readValue(filterParams, FilterParams::class.java)
+            viewModel.filter(filterParams = filterParamsObject)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        val filterIcon = menu.findItem(R.id.action_filter)
+        filterIcon?.setOnMenuItemClickListener {
+            val popupWindow = PopupWindow(
+                    binding?.root,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                popupWindow.elevation = 10.0F
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val slideIn = Slide()
+                slideIn.slideEdge = Gravity.TOP
+                popupWindow.enterTransition = slideIn
+
+                val slideOut = Slide()
+                slideOut.slideEdge = Gravity.RIGHT
+                popupWindow.exitTransition = slideOut
+            }
+            TransitionManager.beginDelayedTransition(mapFragment)
+            popupWindow.showAtLocation(
+                    mapFragment,
+                    Gravity.CENTER,
+                    0,
+                    0
+            )
+
+            setUpSpinners()
+
+            popupWindow.isFocusable = true
+            popupWindow.update()
+            binding?.buttonClose?.setOnClickListener {
+                popupWindow.dismiss()
+            }
+
+            setUpDatePickers()
+
+            setUpSliders()
+
+            binding?.buttonApply?.setOnClickListener {
+                applyFilters()
+                popupWindow.dismiss()
+            }
+            binding?.resetFiltersTextview?.setOnClickListener {
+                viewModel.fetchListings()
+                removeFilterParamsFromSharedPrefs()
+                popupWindow.dismiss()
+            }
+            true
+        }
+        setUpSearchView(menu)
+    }
+
+    private fun applyFilters() {
+        if (viewModel.uiState.value is ListingsViewModel.ListingState.Success) {
+
+            val minimumPhotos = binding?.photosMinTextview?.text.toString().substringBefore(".").toInt()
+            val maximumPhotos = binding?.photosMaxTextview?.text.toString().substringBefore(".").toInt()
+            var typeOfListingText = binding?.typeOfPropertySpinnerFilter?.selectedItem.toString()
+            var statusOfPropertyText = binding?.statusOfPropertySpinnerFilter?.selectedItem.toString()
+
+            if (typeOfListingText.contains("Select")) {
+                typeOfListingText = ""
+            }
+            if (statusOfPropertyText.contains("Select")) {
+                statusOfPropertyText = ""
+            }
+
+            val filterParams = FilterParams(minPrice = binding?.priceMinTextview?.text.toString().toDouble(),
+                    maxPrice = binding?.priceMaxTextview?.text.toString().toDouble(),
+                    minSurfaceArea = binding?.surfaceMinTextview?.text.toString().toDouble(),
+                    maxSurfaceArea = binding?.surfaceMaxTextview?.text.toString().toDouble(),
+                    minNumberOfPhotos = minimumPhotos.toDouble(),
+                    maxNumberOfPhotos = maximumPhotos.toDouble(),
+                    status = statusOfPropertyText,
+                    type = typeOfListingText,
+                    onMarketSince = binding?.beenOnMarketDateTextview?.text.toString(),
+                    soldSince = binding?.beenSoldSinceTextview?.text.toString(),
+                    pointsOfInterest = getCheckedCategories(),
+                    location = binding?.editTextEnterLocation?.text.toString())
+
+            viewModel.filter(filterParams = filterParams)
+            saveFilterParamsToSharedPrefs(filterParams)
+        }
+    }
+
+    private fun setUpSliders() {
+        binding?.priceSlider?.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
+            binding?.priceMinTextview?.text = rangeSlider.values[0].toString() + "0"
+            binding?.priceMaxTextview?.text = rangeSlider.values[1].toString() + "0"
+        }
+        binding?.surfaceAreaSlider?.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
+            binding?.surfaceMinTextview?.text = rangeSlider.values[0].toString().substringBefore(".")
+            binding?.surfaceMaxTextview?.text = rangeSlider.values[1].toString().substringBefore(".")
+        }
+        binding?.numberOfPhotosSlider?.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
+            binding?.photosMinTextview?.text = rangeSlider.values[0].toString().substringBefore(".")
+            binding?.photosMaxTextview?.text = rangeSlider.values[1].toString().substringBefore(".")
+        }
+    }
+
+    private fun removeFilterParamsFromSharedPrefs() {
+        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPrefs.edit()
+        editor.apply {
+            remove("filter")
+            remove("filterParams")
+        }
+                .apply()
+    }
+
+    private fun saveFilterParamsToSharedPrefs(filterParams: FilterParams) {
+        val objectMapper = ObjectMapper()
+        val filterParamsAsString = objectMapper.writeValueAsString(filterParams)
+        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPrefs.edit()
+        editor.apply {
+            putString("filter", "filter")
+            putString("filterParams", filterParamsAsString)
+        }
+                .apply()
+    }
+
+    private fun setUpDatePickers() {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        binding?.beenOnMarketSinceDatePicker?.setOnClickListener {
+            val datePickerDialog = DatePickerDialog(
+                    requireContext(),
+                    { view, Year, Month, Day ->
+                        binding?.beenOnMarketDateTextview?.visibility = View.VISIBLE
+                        var myMonth = (Month + 1).toString()
+                        var myDay = Day.toString()
+                        if (myMonth.length < 2) {
+                            myMonth = "0$myMonth"
+                        }
+                        if (myDay.length < 2) {
+                            myDay = "0$myDay"
+                        }
+                        binding?.beenOnMarketDateTextview?.text = "   $myMonth/$myDay/$Year"
+                    },
+                    year,
+                    month,
+                    day
+            )
+            datePickerDialog.show()
+        }
+
+        binding?.beenSoldSinceDatePicker?.setOnClickListener {
+            val datePickerDialog = DatePickerDialog(
+                    requireContext(),
+                    { view, Year, Month, Day ->
+                        binding?.beenSoldSinceTextview?.visibility = View.VISIBLE
+                        var myMonth = (Month + 1).toString()
+                        var myDay = Day.toString()
+                        if (myMonth.length < 2) {
+                            myMonth = "0$myMonth"
+                        }
+                        if (myDay.length < 2) {
+                            myDay = "0$myDay"
+                        }
+                        binding?.beenSoldSinceTextview?.text = "   $myMonth/$myDay/$Year"
+                    },
+                    year,
+                    month,
+                    day
+            )
+            datePickerDialog.show()
+        }
+    }
+
+    private fun setUpSpinners() {
+        val types = resources.getStringArray(R.array.type_of_listing_spinner)
+        val statuses = resources.getStringArray(R.array.status_of_property_spinner)
+
+        val typeAdapter = ArrayAdapter(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, types)
+        binding?.typeOfPropertySpinnerFilter?.adapter = typeAdapter
+
+        val statusAdapter = ArrayAdapter(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, statuses)
+        binding?.statusOfPropertySpinnerFilter?.adapter = statusAdapter
+    }
+
+    private fun setUpSearchView(menu: Menu) {
+        val menuItem = menu.findItem(R.id.action_search)
+        val searchView: SearchView = menuItem?.actionView as SearchView
+        searchView.queryHint = "Search Listings"
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (viewModel.uiState.value is ListingsViewModel.ListingState.Success) {
+                    val searchParams = SearchParams(searchView.query.toString())
+                    viewModel.search(searchParams)
+                }
+                return false
+            }
+        }
+        )
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+        isLocationOn()
+    }
+
+    private fun attachObservers() {
+        lifecycleScope.launchWhenCreated {
+            viewModel.uiState.collect { uiState ->
+                when (uiState) {
+                    is ListingsViewModel.ListingState.Loading -> {
+                        mapFragmentProgressBar.visibility = View.VISIBLE
+                    }
+                    is ListingsViewModel.ListingState.Success -> {
+                        mapFragmentProgressBar.visibility = View.GONE
+                        val listingData = uiState.listing
+                        setMarkersAndClickListeners(listingData)
+                    }
+                    is ListingsViewModel.ListingState.Error -> {
+                        mapFragmentProgressBar.visibility = View.GONE
+                        Toast.makeText(requireContext(), uiState.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
 
     private fun checkPermission(): Boolean {
         if (ContextCompat.checkSelfPermission(
@@ -484,4 +415,60 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             "Restaurant".takeIf { binding!!.restaurantCheckbox.isChecked },
             "Hospital".takeIf { binding!!.hospitalCheckbox.isChecked }
     )
+
+    private fun setMarkersAndClickListeners(filteredData: List<ListingEntity>) {
+        val builder = LatLngBounds.builder()
+        for (item in filteredData) {
+            if (item.address.isNotEmpty()) {
+                val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                val address = geocoder.getFromLocationName(item.address, 1)
+                var markers: Marker?
+                for (element in address) {
+                    val latLng = LatLng(element.latitude, element.longitude)
+                    markers = map.addMarker(
+                            latLng.let {
+                                MarkerOptions().position(it)
+                                        .title(item.address)
+                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                            }
+                    )
+                    builder.include(markers.position)
+                    val bounds = builder.build()
+                    val width = resources.displayMetrics.widthPixels
+                    val height = resources.displayMetrics.heightPixels
+                    val padding = (width * 0.10).toInt()
+                    val cameraUpdate = CameraUpdateFactory.newLatLngBounds(
+                            bounds,
+                            width,
+                            height,
+                            padding
+                    )
+                    map.animateCamera(cameraUpdate)
+                    geolocalizationButton.setOnClickListener {
+                        map.animateCamera(cameraUpdate)
+                    }
+                }
+            }
+            map.setOnMarkerClickListener { it ->
+                val markerName = it.title
+                if (markerName?.toString() == "My Location") {
+                    it.showInfoWindow()
+                } else {
+                    val fragment = ViewAndUpdateListingFragment()
+                    val transaction = activity?.supportFragmentManager?.beginTransaction()
+                    val bundle = Bundle()
+                    for (listings in filteredData) {
+                        if (listings.address == markerName) {
+                            bundle.putString("listing_id", listings.id.toString())
+                            fragment.arguments = bundle
+                            transaction?.replace(R.id.fragmentContainer, fragment)
+                            transaction?.addToBackStack(null)
+                            transaction?.commit()
+                        }
+                    }
+                }
+                true
+            }
+        }
+    }
 }

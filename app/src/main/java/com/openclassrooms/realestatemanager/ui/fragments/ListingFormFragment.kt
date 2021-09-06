@@ -24,7 +24,6 @@ import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.receiver.AlarmReceiver
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import com.openclassrooms.realestatemanager.viewmodels.SingleListingViewModel
-import kotlinx.android.synthetic.main.filter_screen.*
 import kotlinx.android.synthetic.main.fragment_listing_form.*
 import kotlinx.android.synthetic.main.fragment_listing_form.barCheckbox
 import kotlinx.android.synthetic.main.fragment_listing_form.hospitalCheckbox
@@ -64,10 +63,35 @@ class ListingFormFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val c = Calendar.getInstance()
-        val year = c.get(Calendar.YEAR)
-        val month = c.get(Calendar.MONTH)
-        val day = c.get(Calendar.DAY_OF_MONTH)
+        setUpDatePickers()
+
+
+        val types = resources.getStringArray(R.array.type_of_listing_spinner)
+        val statuses = resources.getStringArray(R.array.status_of_property_spinner)
+
+        val typeOfListingSpinner = activity?.findViewById<Spinner>(R.id.typeOfListingSpinner)
+        val statusOfPropertySpinner = activity?.findViewById<Spinner>(R.id.statusOfPropertySpinner)
+        if (typeOfListingSpinner != null) {
+            val adapter = ArrayAdapter(requireContext(),
+                    android.R.layout.simple_spinner_dropdown_item, types)
+            typeOfListingSpinner.adapter = adapter
+
+        }
+        if (statusOfPropertySpinner != null) {
+            val adapter = ArrayAdapter(requireContext(),
+                    android.R.layout.simple_spinner_dropdown_item, statuses)
+            statusOfPropertySpinner.adapter = adapter
+
+        }
+        attachObservers()
+        insertListing()
+    }
+
+    private fun setUpDatePickers() {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         val enterForSaleDate = activity?.findViewById<EditText>(R.id.editTextEnterDatePutOnMarket)
         val enterSoldDate = activity?.findViewById<EditText>(R.id.editTextEnterSaleDate)
@@ -77,7 +101,7 @@ class ListingFormFragment : Fragment() {
         enterForSaleDate?.setOnClickListener {
             val datePickerDialog = DatePickerDialog(
                     requireContext(),
-                    DatePickerDialog.OnDateSetListener { view, Year, Month, Day ->
+                    { view, Year, Month, Day ->
                         var myMonth = (Month + 1).toString()
                         var myDay = Day.toString()
                         if (myMonth.length < 2) {
@@ -98,7 +122,7 @@ class ListingFormFragment : Fragment() {
         enterSoldDate?.setOnClickListener {
             val datePickerDialog = DatePickerDialog(
                     requireContext(),
-                    DatePickerDialog.OnDateSetListener { view, Year, Month, Day ->
+                    { view, Year, Month, Day ->
                         var myMonth = (Month + 1).toString()
                         var myDay = Day.toString()
                         if (myMonth.length < 2) {
@@ -115,29 +139,6 @@ class ListingFormFragment : Fragment() {
             )
             datePickerDialog.show()
         }
-
-
-        // access the items of the list
-        val types = resources.getStringArray(R.array.type_of_listing_spinner)
-        val statuses = resources.getStringArray(R.array.status_of_property_spinner)
-
-        // access the spinner
-        val typeOfListingSpinner = activity?.findViewById<Spinner>(R.id.typeOfListingSpinner)
-        val statusOfPropertySpinner = activity?.findViewById<Spinner>(R.id.statusOfPropertySpinner)
-        if (typeOfListingSpinner != null) {
-            val adapter = ArrayAdapter(requireContext(),
-                    android.R.layout.simple_spinner_dropdown_item, types)
-            typeOfListingSpinner.adapter = adapter
-
-        }
-        if (statusOfPropertySpinner != null) {
-            val adapter = ArrayAdapter(requireContext(),
-                    android.R.layout.simple_spinner_dropdown_item, statuses)
-            statusOfPropertySpinner.adapter = adapter
-
-        }
-        attachObservers()
-        insertListing()
     }
 
     private fun insertListing() {

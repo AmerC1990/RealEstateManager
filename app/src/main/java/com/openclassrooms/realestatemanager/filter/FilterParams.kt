@@ -1,5 +1,7 @@
 package com.openclassrooms.realestatemanager.filter
 
+import java.io.Serializable
+
 data class FilterParams(
         val minPrice: Double? = null,
         val maxPrice: Double? = null,
@@ -13,5 +15,5 @@ data class FilterParams(
         val onMarketSince: String? = null,
         val soldSince: String? = null,
         val pointsOfInterest: List<String?>? = null
-)
+) : Serializable
 
