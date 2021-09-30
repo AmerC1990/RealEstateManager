@@ -16,13 +16,25 @@ import kotlinx.coroutines.launch
 class ListingsViewModel constructor(private val repository: ListingRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ListingState>(ListingState.Loading)
+    val _filterParams = MutableStateFlow(FilterParams())
     val uiState: StateFlow<ListingState> = _uiState
+
+    init {
+        println("debug inside init VM")
+        fetchListings()
+    }
+
+    fun clearFilters() {
+        _filterParams.value = FilterParams()
+        fetchListings()
+    }
 
     fun fetchListings() {
         _uiState.value = ListingState.Loading
         viewModelScope.launch(IO) {
             repository.getAllListings().collect { result ->
-                _uiState.value = ListingState.Success(result)
+                val filteredData = FilterContext().executeStrategy(_filterParams.value, result)
+                _uiState.value = ListingState.Success(filteredData)
             }
         }
     }
@@ -36,13 +48,8 @@ class ListingsViewModel constructor(private val repository: ListingRepository) :
     }
 
     fun filter(filterParams: FilterParams) {
-        _uiState.value = ListingState.Loading
-        viewModelScope.launch(IO) {
-            repository.getAllListings().collect { result ->
-                val filteredData = FilterContext().executeStrategy(filterParams, result)
-                _uiState.value = ListingState.Success(filteredData)
-            }
-        }
+        _filterParams.value = filterParams
+        fetchListings()
     }
 
     fun search(searchParams: SearchParams) {

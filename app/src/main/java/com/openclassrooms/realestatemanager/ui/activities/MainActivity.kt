@@ -33,13 +33,15 @@ import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.filter_screen.*
 import kotlinx.android.synthetic.main.fragment_all_listings.*
-import org.koin.android.ext.android.inject
 import org.w3c.dom.Text
 import java.util.*
 import kotlin.collections.ArrayList
+import org.koin.android.viewmodel.ext.android.sharedViewModel
+import org.koin.android.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -48,12 +50,16 @@ class MainActivity : AppCompatActivity() {
         showOnlineStatus()
         val mapFragment = MapFragment()
         val allListingsFragment = AllListingsFragment()
-        val viewAndUpdateListingsFragment = ViewAndUpdateListingFragment()
+        val viewAndUpdateListingFragment = ViewAndUpdateListingFragment()
         redirectToLogin()
+        isNotificationReceived(allListingsFragment = allListingsFragment, viewAndUpdateListingFragment = viewAndUpdateListingFragment)
         setUpBottomNavClicks(allListingsFragment = allListingsFragment, mapFragment = mapFragment)
+    }
+
+    private fun isNotificationReceived(viewAndUpdateListingFragment: ViewAndUpdateListingFragment, allListingsFragment: AllListingsFragment) {
         val id = intent.extras?.getInt("id_from_notification")
         if (id != null && id.toString() != "0") {
-            passBundleMakeFragment(viewAndUpdateListingsFragment, id.toString())
+            passBundleMakeFragment(viewAndUpdateListingFragment, id.toString())
         } else {
             makeCurrentFragment(allListingsFragment)
         }
@@ -91,13 +97,6 @@ class MainActivity : AppCompatActivity() {
 
         logoutItem?.setOnMenuItemClickListener {
             firebaseAuth.signOut()
-            val sharedPrefs = this.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-            val editor = sharedPrefs.edit()
-            editor.apply {
-                remove("filter")
-                remove("filterParams")
-            }
-                    .apply()
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             true

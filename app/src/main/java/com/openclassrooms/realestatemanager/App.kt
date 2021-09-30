@@ -5,8 +5,6 @@ import androidx.room.Room
 import com.openclassrooms.realestatemanager.data.cache.ListingsDatabase
 import com.openclassrooms.realestatemanager.data.di.appModule
 import com.openclassrooms.realestatemanager.data.di.dataModule
-import com.openclassrooms.realestatemanager.data.repository.ListingRepository
-import com.openclassrooms.realestatemanager.viewmodels.SingleListingViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin

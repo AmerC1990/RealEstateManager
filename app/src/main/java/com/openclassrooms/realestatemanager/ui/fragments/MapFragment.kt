@@ -20,10 +20,10 @@ import android.widget.*
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -45,12 +45,13 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.android.ext.android.inject
+import org.koin.android.viewmodel.ext.android.sharedViewModel
 import java.util.*
 
 class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
-    private val viewModel: ListingsViewModel by inject()
+    private val viewModel by sharedViewModel<ListingsViewModel>()
+    private val REQUEST_CODE = 101
     private var binding: FilterScreenBinding? = null
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
@@ -69,15 +70,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
-        Log.d("map life", "onmapready")
         if (googleMap != null) {
             googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
             map = googleMap
         }
+        viewModel.filter(viewModel._filterParams.value)
         lifecycleScope.launch(IO) {
             getLocationAccess()
         }
-        fetchData()
+        println("debug onMapReady")
         attachObservers()
     }
 
@@ -107,20 +108,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 mapContainer?.view?.visibility = View.GONE
                 geolocalizationButton.visibility = View.GONE
                 deniedPermissionMessage.visibility = View.VISIBLE
+                requestLocationPermission()
             }
         }
     }
 
-    private fun fetchData() {
-        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-        val filter = sharedPrefs.getString("filter", null)
-        val filterParams = sharedPrefs.getString("filterParams", null)
-        if (filter.isNullOrEmpty()) {
-            viewModel.fetchListings()
-        } else {
-            val objectMapper = ObjectMapper()
-            val filterParamsObject = objectMapper.readValue(filterParams, FilterParams::class.java)
-            viewModel.filter(filterParams = filterParamsObject)
+    private fun requestLocationPermission() {
+        activity?.let {
+            ActivityCompat.requestPermissions(it,
+                    arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                    REQUEST_CODE)
         }
     }
 
@@ -132,27 +129,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT
             )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                popupWindow.elevation = 10.0F
-            }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val slideIn = Slide()
-                slideIn.slideEdge = Gravity.TOP
-                popupWindow.enterTransition = slideIn
-
-                val slideOut = Slide()
-                slideOut.slideEdge = Gravity.RIGHT
-                popupWindow.exitTransition = slideOut
-            }
-            TransitionManager.beginDelayedTransition(mapFragment)
-            popupWindow.showAtLocation(
-                    mapFragment,
-                    Gravity.CENTER,
-                    0,
-                    0
-            )
-
+            setUpPopupWindow(popupWindow)
             setUpSpinners()
 
             popupWindow.isFocusable = true
@@ -162,7 +139,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
 
             setUpDatePickers()
-
             setUpSliders()
 
             binding?.buttonApply?.setOnClickListener {
@@ -170,13 +146,47 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 popupWindow.dismiss()
             }
             binding?.resetFiltersTextview?.setOnClickListener {
-                viewModel.fetchListings()
-                removeFilterParamsFromSharedPrefs()
+                viewModel.clearFilters()
+                viewModel.clearFilters()
+                binding?.barCheckbox?.isSelected = false
+                binding?.schoolCheckbox?.isSelected = false
+                binding?.parkCheckbox?.isSelected = false
+                binding?.restaurantCheckbox?.isSelected = false
+                binding?.hospitalCheckbox?.isSelected = false
+                binding?.editTextEnterLocation?.setText("")
+                binding?.editTextEnterLocation?.setHint(R.string.city_state_or_country)
+                binding?.beenOnMarketDateTextview?.visibility = View.INVISIBLE
+                binding?.beenOnMarketDateTextview?.text = R.string.date.toString()
+                binding?.beenSoldSinceTextview?.visibility = View.INVISIBLE
+                binding?.beenSoldSinceTextview?.text = R.string.date.toString()
                 popupWindow.dismiss()
             }
             true
         }
         setUpSearchView(menu)
+    }
+
+    private fun setUpPopupWindow(popupWindow: PopupWindow) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            popupWindow.elevation = 10.0F
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val slideIn = Slide()
+            slideIn.slideEdge = Gravity.TOP
+            popupWindow.enterTransition = slideIn
+
+            val slideOut = Slide()
+            slideOut.slideEdge = Gravity.RIGHT
+            popupWindow.exitTransition = slideOut
+        }
+        TransitionManager.beginDelayedTransition(mapFragment)
+        popupWindow.showAtLocation(
+                mapFragment,
+                Gravity.CENTER,
+                0,
+                0
+        )
     }
 
     private fun applyFilters() {
@@ -208,7 +218,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     location = binding?.editTextEnterLocation?.text.toString())
 
             viewModel.filter(filterParams = filterParams)
-            saveFilterParamsToSharedPrefs(filterParams)
         }
     }
 
@@ -225,28 +234,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             binding?.photosMinTextview?.text = rangeSlider.values[0].toString().substringBefore(".")
             binding?.photosMaxTextview?.text = rangeSlider.values[1].toString().substringBefore(".")
         }
-    }
-
-    private fun removeFilterParamsFromSharedPrefs() {
-        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPrefs.edit()
-        editor.apply {
-            remove("filter")
-            remove("filterParams")
-        }
-                .apply()
-    }
-
-    private fun saveFilterParamsToSharedPrefs(filterParams: FilterParams) {
-        val objectMapper = ObjectMapper()
-        val filterParamsAsString = objectMapper.writeValueAsString(filterParams)
-        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPrefs.edit()
-        editor.apply {
-            putString("filter", "filter")
-            putString("filterParams", filterParamsAsString)
-        }
-                .apply()
     }
 
     private fun setUpDatePickers() {
@@ -341,13 +328,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun attachObservers() {
+        println("debug attachObservers map fragment")
+
         lifecycleScope.launchWhenCreated {
             viewModel.uiState.collect { uiState ->
+                println("debug cellecting map fragment $uiState")
+
                 when (uiState) {
                     is ListingsViewModel.ListingState.Loading -> {
                         mapFragmentProgressBar.visibility = View.VISIBLE
                     }
                     is ListingsViewModel.ListingState.Success -> {
+//                        Log.d("FILTERVALUE", viewModel._filterParams.value.status.toString().length.toString())
+                        Log.d("uiStateValueSize", viewModel.uiState.value.toString().length.toString())
                         mapFragmentProgressBar.visibility = View.GONE
                         val listingData = uiState.listing
                         setMarkersAndClickListeners(listingData)
@@ -417,6 +410,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     )
 
     private fun setMarkersAndClickListeners(filteredData: List<ListingEntity>) {
+        map.clear()
+        Log.d("dataToShow", filteredData.toString().length.toString())
         val builder = LatLngBounds.builder()
         for (item in filteredData) {
             if (item.address.isNotEmpty()) {

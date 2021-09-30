@@ -1,8 +1,10 @@
 package com.openclassrooms.realestatemanager.ui.activities
 
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
@@ -13,6 +15,9 @@ import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.openclassrooms.realestatemanager.R
@@ -20,19 +25,13 @@ import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val REQUEST_CODE = 101
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        checkAndRequestLocationPermission()
         FirebaseApp.initializeApp(this)
         val animation = AnimationUtils.loadAnimation(this, R.anim.scale_up)
-
-        val sharedPrefs = this.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPrefs.edit()
-        editor.apply {
-            remove("filter")
-            remove("filterParams")
-        }
-                .apply()
 
         createAccountButton.setOnClickListener {
             createAccountButton.startAnimation(animation)
@@ -55,7 +54,6 @@ class LoginActivity : AppCompatActivity() {
     private fun login() {
         val email = editTextEnterEmail.text.toString()
         val password = editTextEnterPassword.text.toString()
-
 
         if (isValidEmail(email) && password.isNotEmpty()) {
             loginProgressBar.visibility = View.VISIBLE
@@ -130,6 +128,26 @@ class LoginActivity : AppCompatActivity() {
         val alert = dialogBuilder.create()
         alert.setTitle("Reset Password")
         alert.show()
+    }
+
+    private fun checkPermission(): Boolean {
+        if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                )
+                == PackageManager.PERMISSION_GRANTED
+        ) {
+            return true
+        }
+        return false
+    }
+
+    private fun checkAndRequestLocationPermission() {
+        if (!checkPermission()) {
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                    REQUEST_CODE)
+        }
     }
 }
 

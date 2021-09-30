@@ -1,5 +1,6 @@
 package com.openclassrooms.realestatemanager.filter
 
+import android.util.Log
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -10,11 +11,12 @@ class PriceStrategy : Strategy {
             if (property.price.isNotEmpty()) {
                 property.price.toDouble() <= param.maxPrice!! && property.price.toDouble() >= param.minPrice!!
             } else {
-                property.id.toString().isNotEmpty()
+                false
             }
         }
     }
 }
+
 
 class SurfaceStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
@@ -22,7 +24,7 @@ class SurfaceStrategy : Strategy {
             if (property.surfaceArea.isNotEmpty()) {
                 property.surfaceArea.toDouble() <= param.maxSurfaceArea!! && property.surfaceArea.toDouble() >= param.minSurfaceArea!!
             } else {
-                property.surfaceArea.isNotEmpty()
+                false
             }
         }
     }
@@ -39,7 +41,12 @@ class PhotosStrategy : Strategy {
 class StatusStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         return data.filter { property ->
-            property.status.contains(param.status!!, ignoreCase = true)
+            if (param.status?.replace("\\s".toRegex(), "")?.isNotEmpty() == true) {
+                param.status.replace("\\s".toRegex(), "").contains(property.status.replace("\\s".toRegex(), ""), ignoreCase = true)
+            } else {
+                return data
+            }
+
         }
     }
 }
@@ -47,7 +54,11 @@ class StatusStrategy : Strategy {
 class TypeStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         return data.filter { property ->
-            property.typeOfListing.contains(param.type!!, ignoreCase = true)
+            if (param.type?.replace("\\s".toRegex(), "")?.isNotEmpty() == true) {
+                param.type.replace("\\s".toRegex(), "").contains(property.typeOfListing.replace("\\s".toRegex(), ""))
+            } else {
+                return data
+            }
         }
     }
 }
@@ -55,40 +66,27 @@ class TypeStrategy : Strategy {
 class BeenOnMarketSinceStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-        if (!param.onMarketSince!!.contains("date", ignoreCase = true)) {
-            for (listing in data) {
-                if (!listing.dateOnMarket.isNullOrEmpty()) {
-                    return data.filter { property ->
-                        return@filter (!property.dateOnMarket.isNullOrEmpty() && LocalDate.parse(property.dateOnMarket.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.onMarketSince.filter { !it.isWhitespace() }, formatter)))
-                    }
-                }
-            }
-        } else if (param.onMarketSince.contains("date", ignoreCase = true)) {
-            return data.filter { property ->
-                return@filter !property.id.toString().isNullOrEmpty()
+        return data.filter { property ->
+            if (property.dateOnMarket.isNotEmpty() && !param.onMarketSince!!.contains("date", ignoreCase = true)) {
+                Log.d("marketif", "marketif")
+                (LocalDate.parse(property.dateOnMarket.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.onMarketSince.filter { !it.isWhitespace() }, formatter)))
+            } else {
+                return data
             }
         }
-        return emptyList()
     }
 }
 
 class BeenSoldSinceStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-        if (!param.soldSince!!.contains("date", ignoreCase = true)) {
-            for (listing in data) {
-                if (!listing.saleDate.isNullOrEmpty()) {
-                    return data.filter { property ->
-                        return@filter (!property.saleDate.isNullOrEmpty() && LocalDate.parse(property.saleDate.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.soldSince.filter { !it.isWhitespace() }, formatter)))
-                    }
-                }
-            }
-        } else if (param.soldSince.contains("date", ignoreCase = true)) {
-            return data.filter { property ->
-                return@filter !property.id.toString().isNullOrEmpty()
+        return data.filter { property ->
+            if (property.saleDate.isNotEmpty() && !param.soldSince!!.contains("date", ignoreCase = true)) {
+                (LocalDate.parse(property.saleDate.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.soldSince.filter { !it.isWhitespace() }, formatter)))
+            } else {
+                return data
             }
         }
-        return emptyList()
     }
 }
 
@@ -108,7 +106,7 @@ class LocationStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         return data.filter { property ->
             if (param.location.toString().isNotEmpty()) {
-                property.address.contains(param.location!!, ignoreCase = true)
+                property.address.contains(param.location?.replace("\\s".toRegex(), "")!!, ignoreCase = true)
             } else {
                 property.id.toString().isNotEmpty()
             }
@@ -117,31 +115,31 @@ class LocationStrategy : Strategy {
 }
 
 class SearchStrategy : Search {
-    override fun filterSearch(param: SearchParams, data: List<ListingEntity>): List<ListingEntity> {
+    override fun filterSearch(param: SearchParams?, data: List<ListingEntity>): List<ListingEntity> {
         return data.filter { property ->
             property.descriptionOfListing.contains(
-                    param.searchViewQuery.toString(),
+                    param?.searchViewQuery.toString(),
                     ignoreCase = true)
                     ||
-                    property.address.contains(param.searchViewQuery.toString(),
+                    property.address.contains(param?.searchViewQuery.toString(),
                             ignoreCase = true)
-                    || property.pointsOfInterest.contains(param.searchViewQuery.toString(),
+                    || property.pointsOfInterest.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
-                    || property.typeOfListing.contains(param.searchViewQuery.toString(),
+                    || property.typeOfListing.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
-                    || property.price.contains(param.searchViewQuery.toString(),
+                    || property.price.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
-                    || property.photoDescription.contains(param.searchViewQuery.toString(),
+                    || property.photoDescription.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
-                    || property.surfaceArea.contains(param.searchViewQuery.toString(),
+                    || property.surfaceArea.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
-                    || property.status.contains(param.searchViewQuery.toString(),
+                    || property.status.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
-                    || property.realEstateAgent.contains(param.searchViewQuery.toString(),
+                    || property.realEstateAgent.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
-                    || property.dateOnMarket.contains(param.searchViewQuery.toString(),
+                    || property.dateOnMarket.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
-                    || property.saleDate.contains(param.searchViewQuery.toString(),
+                    || property.saleDate.contains(param?.searchViewQuery.toString(),
                     ignoreCase = true)
         }
     }

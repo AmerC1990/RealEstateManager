@@ -1,7 +1,6 @@
 package com.openclassrooms.realestatemanager.ui.fragments
 
 import android.app.DatePickerDialog
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.transition.Slide
@@ -17,7 +16,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.android.material.slider.RangeSlider
 import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.Utils
@@ -29,14 +27,17 @@ import com.openclassrooms.realestatemanager.filter.SearchParams
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import kotlinx.android.synthetic.main.fragment_all_listings.*
 import kotlinx.coroutines.flow.collect
-import org.koin.android.ext.android.inject
+import org.koin.android.viewmodel.ext.android.sharedViewModel
+
 import java.util.*
 
-
+import androidx.lifecycle.lifecycleScope
 class AllListingsFragment : Fragment() {
     lateinit var recyclerViewAdapter: RecyclerViewAdapter
-    private val viewModel: ListingsViewModel by inject()
+
+    private val viewModel by sharedViewModel<ListingsViewModel>()
     private var binding: FilterScreenBinding? = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
@@ -44,6 +45,7 @@ class AllListingsFragment : Fragment() {
         actionBar.setDisplayHomeAsUpEnabled(false)
         val view = inflater.inflate(R.layout.filter_screen, null)
         binding = FilterScreenBinding.bind(view)
+        println("debug onCreateView")
 
         return inflater.inflate(R.layout.fragment_all_listings, container, false)
     }
@@ -52,13 +54,14 @@ class AllListingsFragment : Fragment() {
         super.onStart()
         overrideOnBackPressed()
         isUserOnline()
+        println("debug onStart")
+        viewModel.filter(viewModel._filterParams.value)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         initRecyclerview()
         attachObservers()
-        fetchData()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -70,26 +73,8 @@ class AllListingsFragment : Fragment() {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT
             )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                popupWindow.elevation = 10.0F
-            }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val slideIn = Slide()
-                slideIn.slideEdge = Gravity.TOP
-                popupWindow.enterTransition = slideIn
-
-                val slideOut = Slide()
-                slideOut.slideEdge = Gravity.RIGHT
-                popupWindow.exitTransition = slideOut
-            }
-            TransitionManager.beginDelayedTransition(allListingsConstraintLayout)
-            popupWindow.showAtLocation(
-                    allListingsConstraintLayout,
-                    Gravity.CENTER,
-                    0,
-                    0
-            )
+            setUpPopupWindow(popupWindow)
             setUpSpinners()
 
             popupWindow.isFocusable = true
@@ -106,13 +91,48 @@ class AllListingsFragment : Fragment() {
                 popupWindow.dismiss()
             }
             binding?.resetFiltersTextview?.setOnClickListener {
-                viewModel.fetchListings()
-                removeFilterParamsFromSharedPrefs()
+                viewModel.clearFilters()
+                binding?.barCheckbox?.isSelected = false
+                binding?.schoolCheckbox?.isSelected = false
+                binding?.parkCheckbox?.isSelected = false
+                binding?.restaurantCheckbox?.isSelected = false
+                binding?.hospitalCheckbox?.isSelected = false
+                binding?.editTextEnterLocation?.setText("")
+                binding?.editTextEnterLocation?.setHint(R.string.city_state_or_country)
+                binding?.beenOnMarketDateTextview?.visibility = View.INVISIBLE
+                binding?.beenOnMarketDateTextview?.text = R.string.date.toString()
+                binding?.beenSoldSinceTextview?.visibility = View.INVISIBLE
+                binding?.beenSoldSinceTextview?.text = R.string.date.toString()
+
                 popupWindow.dismiss()
             }
             true
         }
         setUpSearchView(menu)
+    }
+
+    private fun setUpPopupWindow(popupWindow: PopupWindow) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            popupWindow.elevation = 10.0F
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val slideIn = Slide()
+            slideIn.slideEdge = Gravity.TOP
+            popupWindow.enterTransition = slideIn
+
+            val slideOut = Slide()
+            slideOut.slideEdge = Gravity.RIGHT
+            popupWindow.exitTransition = slideOut
+        }
+
+        TransitionManager.beginDelayedTransition(allListingsConstraintLayout)
+        popupWindow.showAtLocation(
+                allListingsConstraintLayout,
+                Gravity.CENTER,
+                0,
+                0
+        )
     }
 
     private fun applyFilters() {
@@ -141,8 +161,8 @@ class AllListingsFragment : Fragment() {
                     soldSince = binding?.beenSoldSinceTextview?.text.toString(),
                     pointsOfInterest = getCheckedCategories(),
                     location = binding?.editTextEnterLocation?.text.toString())
+
             viewModel.filter(filterParams = filterParams)
-            saveFilterParamsToSharedPrefs(filterParams)
         }
     }
 
@@ -225,28 +245,6 @@ class AllListingsFragment : Fragment() {
         binding?.statusOfPropertySpinnerFilter?.adapter = statusAdapter
     }
 
-    private fun saveFilterParamsToSharedPrefs(filterParams: FilterParams) {
-        val objectMapper = ObjectMapper()
-        val filterParamsAsString = objectMapper.writeValueAsString(filterParams)
-        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPrefs.edit()
-        editor.apply {
-            putString("filter", "filter")
-            putString("filterParams", filterParamsAsString)
-        }
-                .apply()
-    }
-
-    private fun removeFilterParamsFromSharedPrefs() {
-        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPrefs.edit()
-        editor.apply {
-            remove("filter")
-            remove("filterParams")
-        }
-                .apply()
-    }
-
     private fun setUpSearchView(menu: Menu) {
         val searchItem = menu.findItem(R.id.action_search)
         val searchView: androidx.appcompat.widget.SearchView = searchItem?.actionView as androidx.appcompat.widget.SearchView
@@ -267,14 +265,21 @@ class AllListingsFragment : Fragment() {
         )
     }
     private fun attachObservers() {
+        println("debug attachObservers")
+
         lifecycleScope.launchWhenCreated {
             viewModel.uiState.collect { uiState ->
+                println("debug inside collect $uiState")
+
                 when (uiState) {
                     is ListingsViewModel.ListingState.Loading -> {
 //                        allListingsProgressBar.visibility = View.VISIBLE
                     }
                     is ListingsViewModel.ListingState.Success -> {
                         Log.d("success", "uistate . success is called")
+//                        Log.d("FILTERVALUE", viewModel._filterParams.value.status.toString().length.toString())
+                        Log.d("uiStateValueSize", viewModel.uiState.value.toString().length.toString())
+                        Log.d("dataToShow", uiState.listing.toString().length.toString())
                         recyclerViewAdapter.setListData(uiState.listing as ArrayList<ListingEntity>)
                         recyclerViewAdapter.notifyDataSetChanged()
 //                        allListingsProgressBar.visibility = View.GONE
@@ -292,19 +297,6 @@ class AllListingsFragment : Fragment() {
             replace(R.id.fragmentContainer, fragment)
                     .addToBackStack(null)
             commit()
-        }
-    }
-
-    private fun fetchData() {
-        val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-        val filter = sharedPrefs.getString("filter", null)
-        val filterParams = sharedPrefs.getString("filterParams", null)
-        if (filter.isNullOrEmpty()) {
-            viewModel.fetchListings()
-        } else {
-            val objectMapper = ObjectMapper()
-            val filterParamsObject = objectMapper.readValue(filterParams, FilterParams::class.java)
-            viewModel.filter(filterParams = filterParamsObject)
         }
     }
 

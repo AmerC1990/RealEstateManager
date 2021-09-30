@@ -7,5 +7,5 @@ interface Strategy {
 }
 
 interface Search {
-    fun filterSearch(param: SearchParams, data: List<ListingEntity>): List<ListingEntity>
+    fun filterSearch(param: SearchParams?, data: List<ListingEntity>): List<ListingEntity>
 }
