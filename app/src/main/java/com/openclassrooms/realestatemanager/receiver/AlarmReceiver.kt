@@ -37,8 +37,14 @@ class AlarmReceiver : BroadcastReceiver() {
         val sharedPreferences = context.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
         val listingId = sharedPreferences.getLong("id", 0L)
         val listingAddress = sharedPreferences.getString("address", null)
-        if (listingId != 0L && !listingAddress.isNullOrEmpty()) {
-            fireNotification(id = listingId, context = context, listingAddress = listingAddress, firebaseAuth = firebaseAuth)
+        val address: String = if (listingAddress.isNullOrEmpty()) {
+            "(Missing Address)"
+        }
+        else {
+            listingAddress
+        }
+        if (listingId != 0L) {
+            fireNotification(id = listingId, context = context, listingAddress = address, firebaseAuth = firebaseAuth)
         }
     }
 

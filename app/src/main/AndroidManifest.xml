@@ -9,7 +9,6 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -36,7 +35,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.activities.MainActivity"></activity>
+        <activity android:name=".ui.activities.MainActivity">
+        </activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -48,7 +48,8 @@
 
         <receiver
             android:name=".receiver.AlarmReceiver"
-            android:enabled="true"></receiver>
+            android:enabled="true">
+        </receiver>
 
     </application>
 

@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,7 @@ import android.widget.*
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
 import com.google.firebase.storage.FirebaseStorage
 import com.openclassrooms.realestatemanager.R
@@ -47,17 +49,34 @@ class ViewAndUpdateListingFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
         actionBar.setDisplayHomeAsUpEnabled(true)
+        Log.d("lifecycleC", "onCreateView")
+
         return inflater.inflate(R.layout.fragment_view_and_update_listing, container, false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("lifecycleC", "onCreate")
         overrideOnBackPressed()
         createNotificationChannel()
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.d("lifecycleC", "onStart")
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("lifecycleC", "onResume")
+
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        Log.d("lifecycleC", "onCActivityCreated")
+
         disableEditing()
         attachObservers()
         val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up)
@@ -102,30 +121,6 @@ class ViewAndUpdateListingFragment : Fragment() {
                 android.R.layout.simple_spinner_dropdown_item, statuses)
         statusOfPropertySpinner?.adapter = statusAdapter
 
-        lifecycleScope.launchWhenCreated {
-            listingsViewModel.uiState.collect { uiState ->
-                when (uiState) {
-                    is ListingsViewModel.ListingState.SuccessSingle -> {
-//                        newListingProgressBar.visibility = View.GONE
-                        lifecycleScope.launch(Dispatchers.Main) {
-                            Toast.makeText(requireContext(), "Listing Updated", Toast.LENGTH_LONG).show()
-                            val sharedPrefs = requireContext().getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
-                            val editor = sharedPrefs.edit()
-                            editor.apply {
-                                putLong("id", uiState.listingId)
-                            }
-                                    .apply()
-                            setAlarm()
-                            delay(1500)
-                            activity?.supportFragmentManager?.beginTransaction()?.apply {
-                                replace(R.id.fragmentContainer, AllListingsFragment())
-                                commit()
-                            }
-                        }
-                    }
-                }
-            }
-        }
         lifecycleScope.launchWhenCreated {
             singleListingViewModel.uiState.collect { uiState ->
                 when (uiState) {
@@ -511,11 +506,14 @@ class ViewAndUpdateListingFragment : Fragment() {
             val editor = sharedPrefs.edit()
             editor.apply {
                 putString("address", addressOfListing)
+                putLong("id", id.toLong())
             }
                     .apply()
             delay(1000L)
             setAlarm()
-//            updateListingProgressBar.visibility = View.GONE
+            updateListingProgressBar.visibility = View.GONE
+            Toast.makeText(requireContext(), "Listing Updated", Toast.LENGTH_LONG).show()
+            activity?.supportFragmentManager?.popBackStack()
         }
     }
 
@@ -527,9 +525,20 @@ class ViewAndUpdateListingFragment : Fragment() {
     }
 
     private fun overrideOnBackPressed() {
-        activity?.onBackPressedDispatcher?.addCallback {
-            activity?.supportFragmentManager?.popBackStack()
+        if (activity?.supportFragmentManager?.backStackEntryCount == 0) {
+            activity?.onBackPressedDispatcher?.addCallback {
+                activity?.supportFragmentManager?.beginTransaction()?.apply {
+                    replace(R.id.fragmentContainer, AllListingsFragment())
+                    commit()
+                }
+            }
         }
+        else {
+            activity?.onBackPressedDispatcher?.addCallback {
+                activity?.supportFragmentManager?.popBackStack()
+            }
+        }
+
     }
 
     private fun enableSaveListingButton() {

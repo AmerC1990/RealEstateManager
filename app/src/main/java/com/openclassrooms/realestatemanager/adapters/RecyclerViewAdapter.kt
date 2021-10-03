@@ -28,7 +28,7 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
         this.items = data
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewAdapter.Viewholder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Viewholder {
         val inflater = LayoutInflater.from(parent.context).inflate(R.layout.listing_row, parent, false)
         return Viewholder(inflater)
     }
@@ -37,7 +37,7 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
         return items.size
     }
 
-    override fun onBindViewHolder(holder: RecyclerViewAdapter.Viewholder, position: Int) {
+    override fun onBindViewHolder(holder: Viewholder, position: Int) {
         holder.bind(items[position])
     }
 

@@ -10,6 +10,7 @@ import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -32,6 +33,9 @@ import org.koin.android.viewmodel.ext.android.sharedViewModel
 import java.util.*
 
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlin.collections.ArrayList
+
 class AllListingsFragment : Fragment() {
     lateinit var recyclerViewAdapter: RecyclerViewAdapter
 
@@ -45,8 +49,6 @@ class AllListingsFragment : Fragment() {
         actionBar.setDisplayHomeAsUpEnabled(false)
         val view = inflater.inflate(R.layout.filter_screen, null)
         binding = FilterScreenBinding.bind(view)
-        println("debug onCreateView")
-
         return inflater.inflate(R.layout.fragment_all_listings, container, false)
     }
 
@@ -54,8 +56,6 @@ class AllListingsFragment : Fragment() {
         super.onStart()
         overrideOnBackPressed()
         isUserOnline()
-        println("debug onStart")
-        viewModel.filter(viewModel._filterParams.value)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -65,6 +65,7 @@ class AllListingsFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        viewModel.filter(viewModel._filterParams.value)
         val filterIcon = menu.findItem(R.id.action_filter)
         filterIcon?.setOnMenuItemClickListener {
 
@@ -265,27 +266,27 @@ class AllListingsFragment : Fragment() {
         )
     }
     private fun attachObservers() {
-        println("debug attachObservers")
-
         lifecycleScope.launchWhenCreated {
             viewModel.uiState.collect { uiState ->
-                println("debug inside collect $uiState")
-
                 when (uiState) {
                     is ListingsViewModel.ListingState.Loading -> {
-//                        allListingsProgressBar.visibility = View.VISIBLE
+                        if (allListingsProgressBar != null) {
+                            allListingsProgressBar.visibility = View.VISIBLE
+                        }
                     }
                     is ListingsViewModel.ListingState.Success -> {
-                        Log.d("success", "uistate . success is called")
-//                        Log.d("FILTERVALUE", viewModel._filterParams.value.status.toString().length.toString())
-                        Log.d("uiStateValueSize", viewModel.uiState.value.toString().length.toString())
-                        Log.d("dataToShow", uiState.listing.toString().length.toString())
+                        if (allListingsProgressBar != null) {
+                            allListingsProgressBar.visibility = View.GONE
+                        }
                         recyclerViewAdapter.setListData(uiState.listing as ArrayList<ListingEntity>)
                         recyclerViewAdapter.notifyDataSetChanged()
-//                        allListingsProgressBar.visibility = View.GONE
+
                     }
                     is ListingsViewModel.ListingState.Error -> {
-//                        allListingsProgressBar.visibility = View.GONE
+                        if (allListingsProgressBar != null) {
+                            allListingsProgressBar.visibility = View.GONE
+                        }
+                        Toast.makeText(requireContext(), uiState.message, Toast.LENGTH_LONG).show()
                     }
                 }
             }

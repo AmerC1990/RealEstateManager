@@ -39,6 +39,7 @@ import com.openclassrooms.realestatemanager.databinding.FilterScreenBinding
 import com.openclassrooms.realestatemanager.filter.FilterParams
 import com.openclassrooms.realestatemanager.filter.SearchParams
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
+import kotlinx.android.synthetic.main.fragment_all_listings.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -78,7 +79,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         lifecycleScope.launch(IO) {
             getLocationAccess()
         }
-        println("debug onMapReady")
         attachObservers()
     }
 
@@ -147,7 +147,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
             binding?.resetFiltersTextview?.setOnClickListener {
                 viewModel.clearFilters()
-                viewModel.clearFilters()
                 binding?.barCheckbox?.isSelected = false
                 binding?.schoolCheckbox?.isSelected = false
                 binding?.parkCheckbox?.isSelected = false
@@ -191,7 +190,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun applyFilters() {
         if (viewModel.uiState.value is ListingsViewModel.ListingState.Success) {
-
             val minimumPhotos = binding?.photosMinTextview?.text.toString().substringBefore(".").toInt()
             val maximumPhotos = binding?.photosMaxTextview?.text.toString().substringBefore(".").toInt()
             var typeOfListingText = binding?.typeOfPropertySpinnerFilter?.selectedItem.toString()
@@ -328,25 +326,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun attachObservers() {
-        println("debug attachObservers map fragment")
-
         lifecycleScope.launchWhenCreated {
             viewModel.uiState.collect { uiState ->
-                println("debug cellecting map fragment $uiState")
-
                 when (uiState) {
                     is ListingsViewModel.ListingState.Loading -> {
-                        mapFragmentProgressBar.visibility = View.VISIBLE
+                        if (mapFragmentProgressBar != null) {
+                            mapFragmentProgressBar.visibility = View.VISIBLE
+                        }
                     }
                     is ListingsViewModel.ListingState.Success -> {
-//                        Log.d("FILTERVALUE", viewModel._filterParams.value.status.toString().length.toString())
-                        Log.d("uiStateValueSize", viewModel.uiState.value.toString().length.toString())
-                        mapFragmentProgressBar.visibility = View.GONE
+                        if (mapFragmentProgressBar != null) {
+                            mapFragmentProgressBar.visibility = View.GONE
+                        }
                         val listingData = uiState.listing
                         setMarkersAndClickListeners(listingData)
                     }
-                    is ListingsViewModel.ListingState.Error -> {
-                        mapFragmentProgressBar.visibility = View.GONE
+                        is ListingsViewModel.ListingState.Error -> {
+                        if (mapFragmentProgressBar != null) {
+                            mapFragmentProgressBar.visibility = View.GONE
+                        }
                         Toast.makeText(requireContext(), uiState.message, Toast.LENGTH_LONG).show()
                     }
                 }
@@ -411,7 +409,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun setMarkersAndClickListeners(filteredData: List<ListingEntity>) {
         map.clear()
-        Log.d("dataToShow", filteredData.toString().length.toString())
         val builder = LatLngBounds.builder()
         for (item in filteredData) {
             if (item.address.isNotEmpty()) {
@@ -439,7 +436,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             padding
                     )
                     map.animateCamera(cameraUpdate)
-                    geolocalizationButton.setOnClickListener {
+                    geolocalizationButton?.setOnClickListener {
                         map.animateCamera(cameraUpdate)
                     }
                 }
