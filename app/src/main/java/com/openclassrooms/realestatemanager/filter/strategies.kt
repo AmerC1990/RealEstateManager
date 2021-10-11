@@ -1,18 +1,33 @@
 package com.openclassrooms.realestatemanager.filter
 
+import com.openclassrooms.realestatemanager.Utils.convertDateFromUSAToWorld
+import com.openclassrooms.realestatemanager.Utils.convertDollarToEuro
+import com.openclassrooms.realestatemanager.Utils.doesLocaleSubscribeToEuroCurrency
+import com.openclassrooms.realestatemanager.Utils.isLocaleInAmerica
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class PriceStrategy : Strategy {
-    override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
-        return data.filter { property ->
-            if (property.price.isNotEmpty()) {
-                property.price.toDouble() <= param.maxPrice!! && property.price.toDouble() >= param.minPrice!!
-            } else {
-                false
+        override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
+            if(!doesLocaleSubscribeToEuroCurrency()) {
+                return data.filter { property ->
+                    if (property.price.isNotEmpty()) {
+                        property.price.toDouble() <= param.maxPrice!! && property.price.toDouble() >= param.minPrice!!
+                    } else {
+                        false
+                    }
+                }
             }
-        }
+            else {
+                return data.filter { property ->
+                    if (property.price.isNotEmpty()) {
+                        convertDollarToEuro(property.price.toInt()).toDouble() <= param.maxPrice!! && convertDollarToEuro(property.price.toInt()).toDouble() >= param.minPrice!!
+                    } else {
+                        false
+                    }
+                }
+            }
     }
 }
 
@@ -39,12 +54,17 @@ class PhotosStrategy : Strategy {
 class StatusStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         return data.filter { property ->
-            if (param.status?.replace("\\s".toRegex(), "")?.isNotEmpty() == true) {
-                param.status.replace("\\s".toRegex(), "").contains(property.status.replace("\\s".toRegex(), ""), ignoreCase = true)
+            return if (param.status?.isNotEmpty() == true) {
+                val myList = mutableListOf<ListingEntity>()
+                for (it in data) {
+                    if (!it.status.isNullOrEmpty() && it.status.contains(param.status.toString())) {
+                        myList.add(it)
+                    }
+                }
+                myList
             } else {
-                return data
+                data
             }
-
         }
     }
 }
@@ -52,10 +72,16 @@ class StatusStrategy : Strategy {
 class TypeStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
         return data.filter { property ->
-            if (param.type?.replace("\\s".toRegex(), "")?.isNotEmpty() == true) {
-                param.type.replace("\\s".toRegex(), "").contains(property.typeOfListing.replace("\\s".toRegex(), ""))
+            return if (param.type?.isNotEmpty() == true) {
+                val myList = mutableListOf<ListingEntity>()
+                for (it in data) {
+                    if (!it.typeOfListing.isNullOrEmpty() && it.typeOfListing.contains(param.type.toString())) {
+                        myList.add(it)
+                    }
+                }
+                myList
             } else {
-                return data
+                data
             }
         }
     }
@@ -63,36 +89,71 @@ class TypeStrategy : Strategy {
 
 class BeenOnMarketSinceStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
-        val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-        return if (!param.onMarketSince!!.contains("date", ignoreCase = true) && param.onMarketSince.contains("/")) {
-            val myList = mutableListOf<ListingEntity>()
-            for (it in data) {
-                if (it.dateOnMarket.isNotEmpty() && LocalDate.parse(it.dateOnMarket.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.onMarketSince.filter { !it.isWhitespace() }, formatter))) {
-                    myList.add(it)
+        if (isLocaleInAmerica()) {
+            val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+            return if (!param.onMarketSince!!.contains("date", ignoreCase = true) && param.onMarketSince.contains("/")) {
+                val myList = mutableListOf<ListingEntity>()
+                for (it in data) {
+                    if (it.dateOnMarket.isNotEmpty() && LocalDate.parse(it.dateOnMarket.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.onMarketSince.filter { !it.isWhitespace() }, formatter))) {
+                        myList.add(it)
+                    }
                 }
+                myList
             }
-            myList
+            else {
+                data
+            }
         }
         else {
-            data
+            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            return if (!param.onMarketSince!!.contains("date", ignoreCase = true) && param.onMarketSince.contains("/")) {
+                val myList = mutableListOf<ListingEntity>()
+                for (it in data) {
+                    if (it.dateOnMarket.isNotEmpty() && LocalDate.parse(convertDateFromUSAToWorld(it.dateOnMarket).filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.onMarketSince.filter { !it.isWhitespace() }, formatter))) {
+                        myList.add(it)
+                    }
+                }
+                myList
+            }
+            else {
+                data
+            }
         }
+
     }
 }
 
 class BeenSoldSinceStrategy : Strategy {
     override fun filter(param: FilterParams, data: List<ListingEntity>): List<ListingEntity> {
-        val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-        return if (!param.soldSince!!.contains("date", ignoreCase = true) && param.soldSince.contains("/")) {
-            val myList = mutableListOf<ListingEntity>()
-            for (it in data) {
-                if (it.saleDate.isNotEmpty() && LocalDate.parse(it.saleDate.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.soldSince.filter { !it.isWhitespace() }, formatter))) {
-                    myList.add(it)
+        if (isLocaleInAmerica()) {
+            val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+            return if (!param.soldSince!!.contains("date", ignoreCase = true) && param.soldSince.contains("/")) {
+                val myList = mutableListOf<ListingEntity>()
+                for (it in data) {
+                    if (it.saleDate.isNotEmpty() && LocalDate.parse(it.saleDate.filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.soldSince.filter { !it.isWhitespace() }, formatter))) {
+                        myList.add(it)
+                    }
                 }
+                myList
             }
-            myList
+            else {
+                data
+            }
         }
         else {
-            data
+            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            return if (!param.soldSince!!.contains("date", ignoreCase = true) && param.soldSince.contains("/")) {
+                val myList = mutableListOf<ListingEntity>()
+                for (it in data) {
+                    if (it.saleDate.isNotEmpty() && LocalDate.parse(convertDateFromUSAToWorld(it.saleDate).filter { !it.isWhitespace() }, formatter).isAfter(LocalDate.parse(param.soldSince.filter { !it.isWhitespace() }, formatter))) {
+                        myList.add(it)
+                    }
+                }
+                myList
+            }
+            else {
+                data
+            }
         }
     }
 }
@@ -104,9 +165,7 @@ class BeenSoldSinceStrategy : Strategy {
                 property.pointsOfInterest.replace("[", "").replace("]", "").split(",").map { it.trim() }
                         .containsAll(param.pointsOfInterest!!)
             }
-
         }
-
     }
 
     class LocationStrategy : Strategy {

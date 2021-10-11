@@ -20,13 +20,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.Utils
+import com.openclassrooms.realestatemanager.Utils.convertDateFromUSAToWorld
+import com.openclassrooms.realestatemanager.Utils.convertDollarToEuro
+import com.openclassrooms.realestatemanager.Utils.isLocaleInAmerica
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.receiver.AlarmReceiver
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import com.openclassrooms.realestatemanager.viewmodels.SingleListingViewModel
+import kotlinx.android.synthetic.main.fragment_all_listings.*
+import kotlinx.android.synthetic.main.fragment_listing_form.*
 import kotlinx.android.synthetic.main.fragment_view_and_update_listing.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
@@ -36,6 +42,7 @@ import java.util.*
 
 
 class ViewAndUpdateListingFragment : Fragment() {
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private lateinit var alarmManager: AlarmManager
     lateinit var notificationManager: NotificationManager
     lateinit var notificationChannel: NotificationChannel
@@ -49,34 +56,22 @@ class ViewAndUpdateListingFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
         actionBar.setDisplayHomeAsUpEnabled(true)
-        Log.d("lifecycleC", "onCreateView")
-
         return inflater.inflate(R.layout.fragment_view_and_update_listing, container, false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("lifecycleC", "onCreate")
         overrideOnBackPressed()
         createNotificationChannel()
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d("lifecycleC", "onStart")
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("lifecycleC", "onResume")
-
+        handleGuestUser()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        Log.d("lifecycleC", "onCActivityCreated")
-
         disableEditing()
         attachObservers()
         val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up)
@@ -141,7 +136,13 @@ class ViewAndUpdateListingFragment : Fragment() {
                             typeOfListingSpinner?.setSelection(0)
                         }
 
-                        editTextEnterPriceUpdate.setText(uiState.listing.price)
+                        if (Utils.doesLocaleSubscribeToEuroCurrency()) {
+                            editTextEnterPriceUpdate.setText(convertDollarToEuro(uiState.listing.price.toInt()).toString())
+                        }
+                        else if (!Utils.doesLocaleSubscribeToEuroCurrency()) {
+                            editTextEnterPriceUpdate.setText(uiState.listing.price)
+                        }
+
                         editTextEnterSurfaceAreaUpdate.setText(uiState.listing.surfaceArea)
                         editTextEnterNumberOfRoomsUpdate.setText(uiState.listing.numberOfRooms)
                         editTextEnterDescriptionUpdate.setText(uiState.listing.descriptionOfListing)
@@ -162,8 +163,14 @@ class ViewAndUpdateListingFragment : Fragment() {
                                 checkbox.isChecked = true
                             }
                         }
-                        editTextEnterDatePutOnMarketUpdate.setText(uiState.listing.dateOnMarket)
-                        editTextEnterSaleDateUpdate.setText(uiState.listing.saleDate)
+                        if (!isLocaleInAmerica()) {
+                            editTextEnterDatePutOnMarketUpdate.setText(convertDateFromUSAToWorld(uiState.listing.dateOnMarket))
+                            editTextEnterSaleDateUpdate.setText(convertDateFromUSAToWorld(uiState.listing.saleDate))
+                        } else if (isLocaleInAmerica()) {
+                            editTextEnterDatePutOnMarketUpdate.setText(uiState.listing.dateOnMarket)
+                            editTextEnterSaleDateUpdate.setText(uiState.listing.saleDate)
+                        }
+
                         editTextEnterNameOfAgentUpdate.setText(uiState.listing.realEstateAgent)
                         if (uiState.listing.photoReference.contains("firebasestorage")) {
                             allPhotos.put(0, uiState.listing.photoReference)
@@ -351,6 +358,9 @@ class ViewAndUpdateListingFragment : Fragment() {
         typeOfListingSpinnerUpdate.isClickable = true
         typeOfListingSpinnerUpdate.isEnabled = true
         editTextEnterPriceUpdate.isEnabled = true
+        if (Utils.doesLocaleSubscribeToEuroCurrency()) {
+            editTextEnterPriceUpdate.hint = R.string.price_of_property_euro.toString()
+        }
         editTextEnterSurfaceAreaUpdate.isEnabled = true
         editTextEnterNumberOfRoomsUpdate.isEnabled = true
         editTextEnterDescriptionUpdate.isEnabled = true
@@ -369,6 +379,10 @@ class ViewAndUpdateListingFragment : Fragment() {
         statusOfPropertySpinnerUpdate.isClickable = true
         editTextEnterDatePutOnMarketUpdate.isEnabled = true
         editTextEnterSaleDateUpdate.isEnabled = true
+        if (!isLocaleInAmerica()) {
+            editTextEnterDatePutOnMarketUpdate.hint = R.string.date_put_on_market_non_american.toString()
+            editTextEnterSaleDateUpdate.hint = R.string.date_sold_hint_non_american.toString()
+        }
         editTextEnterNameOfAgentUpdate.isEnabled = true
     }
 
@@ -442,15 +456,33 @@ class ViewAndUpdateListingFragment : Fragment() {
 
         val imageDescription = editTextEnterImageDescriptionUpdate.text.toString()
         val typeOfListing = typeOfListingText
-        val priceOfListing = editTextEnterPriceUpdate.text.toString()
+        var priceOfListing = ""
+        if (Utils.doesLocaleSubscribeToEuroCurrency()) {
+            priceOfListing = Utils.convertEuroToDollar(editTextEnterPriceUpdate.text.toString().toInt()).toString()
+        }
+        else if (!Utils.doesLocaleSubscribeToEuroCurrency()) {
+            priceOfListing = editTextEnterPriceUpdate.text.toString()
+        }
         val surfaceArea = editTextEnterSurfaceAreaUpdate.text.toString()
         val numberOfRooms = editTextEnterNumberOfRoomsUpdate.text.toString()
         val descriptionOfListing = editTextEnterDescriptionUpdate.text.toString()
         val addressOfListing = editTextEnterAddressUpdate.text.toString()
         val pointsOfInterest = pointsOfInterestList
         val statusOfListing = statusOfPropertyText
-        val dateOnMarket = editTextEnterDatePutOnMarketUpdate.text.toString()
-        val saleDateOfListing = editTextEnterSaleDateUpdate.text.toString()
+        var dateOnMarket = ""
+        if (isLocaleInAmerica()) {
+            dateOnMarket = editTextEnterDatePutOnMarketUpdate.text.toString()
+        }
+        else if (!isLocaleInAmerica()) {
+            dateOnMarket = Utils.convertDateFromWorldToUSA(editTextEnterDatePutOnMarketUpdate.text.toString())
+        }
+        var saleDateOfListing = ""
+        if (isLocaleInAmerica()) {
+            saleDateOfListing = editTextEnterSaleDateUpdate.text.toString()
+        }
+        else if (!isLocaleInAmerica()) {
+            saleDateOfListing = Utils.convertDateFromWorldToUSA(editTextEnterSaleDateUpdate.text.toString())
+        }
         val nameOfAgent = editTextEnterNameOfAgentUpdate.text.toString()
         val photoOne = allPhotos.getOrDefault(0, "")
         val photoTwo = allPhotos.getOrDefault(1, "")
@@ -816,7 +848,13 @@ class ViewAndUpdateListingFragment : Fragment() {
                         if (myDay.length < 2) {
                             myDay = "0$myDay"
                         }
-                        enterForSaleDate.setText("  $myMonth/$myDay/$Year")
+                        if (isLocaleInAmerica()) {
+                            enterForSaleDate.setText("  $myMonth/$myDay/$Year")
+                        }
+                        else {
+                            enterForSaleDate.setText("  $myDay/$myMonth/$Year")
+                        }
+
                     },
                     year,
                     month,
@@ -837,7 +875,12 @@ class ViewAndUpdateListingFragment : Fragment() {
                         if (myDay.length < 2) {
                             myDay = "0$myDay"
                         }
-                        enterSoldDate.setText("  $myMonth/$myDay/$Year")
+                        if (isLocaleInAmerica()) {
+                            enterSoldDate.setText("  $myMonth/$myDay/$Year")
+                        }
+                        else {
+                            enterSoldDate.setText("  $myDay/$myMonth/$Year")
+                        }
                     },
                     year,
                     month,
@@ -850,5 +893,11 @@ class ViewAndUpdateListingFragment : Fragment() {
     private fun setListingUpdateButtonVisibility() {
         buttonEditListingUpdate.visibility = View.GONE
         buttonSaveListingUpdate.visibility = View.GONE
+    }
+
+    private fun handleGuestUser() {
+        if (firebaseAuth.currentUser?.email.isNullOrEmpty()) {
+            setListingUpdateButtonVisibility()
+        }
     }
 }

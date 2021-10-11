@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity() {
         val mapFragment = MapFragment()
         val allListingsFragment = AllListingsFragment()
         val viewAndUpdateListingFragment = ViewAndUpdateListingFragment()
-        redirectToLogin()
         isNotificationReceived(allListingsFragment = allListingsFragment, viewAndUpdateListingFragment = viewAndUpdateListingFragment)
         setUpBottomNavClicks(allListingsFragment = allListingsFragment, mapFragment = mapFragment)
     }
@@ -62,13 +61,6 @@ class MainActivity : AppCompatActivity() {
             passBundleMakeFragment(viewAndUpdateListingFragment, id.toString())
         } else {
             makeCurrentFragment(allListingsFragment)
-        }
-    }
-
-    private fun redirectToLogin() {
-        if (firebaseAuth.currentUser?.email.isNullOrEmpty()) {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
         }
     }
 
@@ -92,8 +84,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu, menu)
         val userEmailItem = menu?.findItem(R.id.userEmailItem)
-        userEmailItem?.title = firebaseAuth.currentUser?.email?.toString()
+        userEmailItem?.title = firebaseAuth.currentUser?.email?.toString() ?: "Guest"
         val logoutItem = menu?.findItem(R.id.logoutItem)
+        if (firebaseAuth.currentUser?.email?.toString().isNullOrEmpty()) {
+            logoutItem?.title = "Login"
+        }
+        else if(!firebaseAuth.currentUser?.email?.toString().isNullOrEmpty()) {
+            logoutItem?.title = "Logout"
+        }
 
         logoutItem?.setOnMenuItemClickListener {
             firebaseAuth.signOut()

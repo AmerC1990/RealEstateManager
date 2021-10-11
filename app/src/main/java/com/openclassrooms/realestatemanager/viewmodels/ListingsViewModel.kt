@@ -20,7 +20,6 @@ class ListingsViewModel constructor(private val repository: ListingRepository) :
     val uiState: StateFlow<ListingState> = _uiState
 
     init {
-        println("debug inside init VM")
         fetchListings()
     }
 

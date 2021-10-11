@@ -5,6 +5,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
@@ -49,6 +50,10 @@ class LoginActivity : AppCompatActivity() {
             resetPasswordDialog()
         }
 
+        loginAsGuestButton.setOnClickListener {
+            loginAsGuest()
+        }
+
     }
 
     private fun login() {
@@ -78,7 +83,12 @@ class LoginActivity : AppCompatActivity() {
         else {
             Toast.makeText(this, "Please enter a valid email address and a password", Toast.LENGTH_LONG).show()
         }
-
+    }
+    private fun loginAsGuest() {
+        loginProgressBar.visibility = View.VISIBLE
+        val intent = Intent(this, MainActivity::class.java)
+        loginProgressBar.visibility = View.GONE
+        startActivity(intent)
     }
 
     private fun registerUser(email: String, password: String) {

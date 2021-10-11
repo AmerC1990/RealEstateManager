@@ -14,6 +14,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="type_of_listing">Select Type of Listing</string>
     <string name="price_of_property_usd">Price of property (USD)</string>
+    <string name="price_of_property_euro">Price of property (EURO)</string>
     <string name="enter_surface_area_in_m2">Surface Area</string>
     <string name="number_of_rooms">  Number Of rooms </string>
     <string name="description_of_listing">Description of Listing</string>
@@ -24,7 +25,9 @@
     <string name="points_of_interest">Points of Interest Nearby</string>
     <string name="status_of_property_sold_or_for_sale">Status of Property (Sold or For Sale)</string>
     <string name="date_put_on_market">  Date For Sale ("MM-dd-yyyy")</string>
+    <string name="date_put_on_market_non_american">  Date For Sale ("dd-MM-yyyy")</string>
     <string name="date_sold_hint">  Date Sold ("MM-dd-yyyy")</string>
+    <string name="date_sold_hint_non_american">  Date Sold ("dd-MM-yyyy")</string>
     <string name="name_of_real_estate_agent_selling_property">Name of Real Estate Agent</string>
     <string name="save_listing">Save Listing</string>
     <string name="useremail">UserEmail</string>
@@ -61,4 +64,5 @@
     <string name="location_disabled_message">Your location is disabled, do you want to enable it?</string>
     <string name="denied_permission_string">Location permission is required to view your location, please enable it in settings</string>
     <string name="reset_filters">Reset filters</string>
+    <string name="sign_in_as_guest">SIGN IN AS GUEST</string>
 </resources>

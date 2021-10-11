@@ -21,6 +21,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.storage.FirebaseStorage
 import com.openclassrooms.realestatemanager.R
+import com.openclassrooms.realestatemanager.Utils.convertDateFromWorldToUSA
+import com.openclassrooms.realestatemanager.Utils.convertEuroToDollar
+import com.openclassrooms.realestatemanager.Utils.doesLocaleSubscribeToEuroCurrency
+import com.openclassrooms.realestatemanager.Utils.isLocaleInAmerica
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.receiver.AlarmReceiver
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
@@ -60,6 +64,14 @@ class ListingFormFragment : Fragment() {
         super.onCreate(savedInstanceState)
         overrideOnBackPressed()
         createNotificationChannel()
+        if (!doesLocaleSubscribeToEuroCurrency()) {
+            editTextEnterPrice.hint = R.string.price_of_property_euro.toString()
+        }
+        if (!isLocaleInAmerica()) {
+            editTextEnterDatePutOnMarket.hint = R.string.date_put_on_market_non_american.toString()
+            editTextEnterSaleDate.hint = R.string.date_sold_hint_non_american.toString()
+        }
+
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -111,7 +123,12 @@ class ListingFormFragment : Fragment() {
                         if (myDay.length < 2) {
                             myDay = "0$myDay"
                         }
-                        enterForSaleDate.setText("  $myMonth/$myDay/$Year")
+                        if (isLocaleInAmerica()) {
+                            enterForSaleDate.setText("  $myMonth/$myDay/$Year")
+                        }
+                        else {
+                            enterForSaleDate.setText("  $myDay/$myMonth/$Year")
+                        }
                     },
                     year,
                     month,
@@ -132,7 +149,12 @@ class ListingFormFragment : Fragment() {
                         if (myDay.length < 2) {
                             myDay = "0$myDay"
                         }
-                        enterSoldDate.setText("  $myMonth/$myDay/$Year")
+                        if (isLocaleInAmerica()) {
+                            enterSoldDate.setText("  $myMonth/$myDay/$Year")
+                        }
+                        else {
+                            enterSoldDate.setText("  $myDay/$myMonth/$Year")
+                        }
                     },
                     year,
                     month,
@@ -172,15 +194,34 @@ class ListingFormFragment : Fragment() {
 
         val imageDescription = editTextEnterImageDescription.text.toString()
         val typeOfListing = typeOfListingText
-        val priceOfListing = editTextEnterPrice.text.toString()
+        var priceOfListing = ""
+        if (doesLocaleSubscribeToEuroCurrency()) {
+            priceOfListing = convertEuroToDollar(editTextEnterPrice.text.toString().toInt()).toString()
+        }
+        else if (!doesLocaleSubscribeToEuroCurrency()) {
+            priceOfListing = editTextEnterPrice.text.toString()
+        }
+
         val surfaceArea = editTextEnterSurfaceArea.text.toString()
         val numberOfRooms = editTextEnterNumberOfRooms.text.toString()
         val descriptionOfListing = editTextEnterDescription.text.toString()
         val addressOfListing = editTextEnterAddress.text.toString()
         val pointsOfInterest = pointsOfInterestList
         val statusOfListing = statusOfPropertyText
-        val dateOnMarket = editTextEnterDatePutOnMarket.text.toString()
-        val saleDateOfListing = editTextEnterSaleDate.text.toString()
+        var dateOnMarket = ""
+        if (isLocaleInAmerica()) {
+            dateOnMarket = editTextEnterDatePutOnMarket.text.toString()
+        }
+        else if (!isLocaleInAmerica()) {
+            dateOnMarket = convertDateFromWorldToUSA(editTextEnterDatePutOnMarket.text.toString())
+        }
+        var saleDateOfListing = ""
+        if (isLocaleInAmerica()) {
+            saleDateOfListing = editTextEnterSaleDate.text.toString()
+        }
+        else if (!isLocaleInAmerica()) {
+            saleDateOfListing = convertDateFromWorldToUSA(editTextEnterSaleDate.text.toString())
+        }
         val nameOfAgent = editTextEnterNameOfAgent.text.toString()
         val photoOne = allPhotos.getOrDefault(0, "")
         val photoTwo = allPhotos.getOrDefault(1, "")

@@ -33,11 +33,13 @@ import org.koin.android.viewmodel.ext.android.sharedViewModel
 import java.util.*
 
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlin.collections.ArrayList
 
 class AllListingsFragment : Fragment() {
     lateinit var recyclerViewAdapter: RecyclerViewAdapter
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val viewModel by sharedViewModel<ListingsViewModel>()
     private var binding: FilterScreenBinding? = null
@@ -56,6 +58,7 @@ class AllListingsFragment : Fragment() {
         super.onStart()
         overrideOnBackPressed()
         isUserOnline()
+        handleGuestUser()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -332,6 +335,12 @@ class AllListingsFragment : Fragment() {
                 changeFragment(listingFormFragment)
             }
         } else if (!Utils.isOnline(requireContext())) {
+            addListingButton.visibility = View.GONE
+        }
+    }
+
+    private fun handleGuestUser() {
+        if (firebaseAuth.currentUser?.email.isNullOrEmpty()) {
             addListingButton.visibility = View.GONE
         }
     }

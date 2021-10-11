@@ -1,6 +1,7 @@
 package com.openclassrooms.realestatemanager
 
 import android.content.Context
+import android.content.res.Resources
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
@@ -38,9 +39,15 @@ object Utils {
 //            return dateFormat.format(Date())
 //        }
 
-    fun convertDate(date: Date): String {
-        val currentDate = LocalDate.parse(date.toString())
+    fun convertDateFromWorldToUSA(date: String): String {
+        val currentDate = LocalDate.parse(date)
         val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+        return currentDate.format(formatter)
+    }
+
+    fun convertDateFromUSAToWorld(date: String): String {
+        val currentDate = LocalDate.parse(date)
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
         return currentDate.format(formatter)
     }
 
@@ -71,5 +78,33 @@ object Utils {
             }
         }
         return false
+    }
+
+    fun isLocaleInAmerica():Boolean {
+        val defaultLocale = Resources.getSystem().configuration.locales
+        return defaultLocale.toString().contains("en_US")
+    }
+
+    fun doesLocaleSubscribeToEuroCurrency(): Boolean {
+        val defaultLocale = Resources.getSystem().configuration.locales
+        return (defaultLocale.toString().contains("de_DE")
+                || defaultLocale.toString().contains("ca_ES")
+                || defaultLocale.toString().contains("en_IE")
+                || defaultLocale.toString().contains("fi_FI")
+                || defaultLocale.toString().contains("fr_BE")
+                || defaultLocale.toString().contains("fr_FR")
+                || defaultLocale.toString().contains("de_AT")
+                || defaultLocale.toString().contains("de_DE")
+                || defaultLocale.toString().contains("de_LI")
+                || defaultLocale.toString().contains("el_GR")
+                || defaultLocale.toString().contains("it_IT")
+                || defaultLocale.toString().contains("lv_LV")
+                || defaultLocale.toString().contains("lt_LT")
+                || defaultLocale.toString().contains("pt_PT")
+                || defaultLocale.toString().contains("sk_SK")
+                || defaultLocale.toString().contains("sl_SI")
+                || defaultLocale.toString().contains("es_ES")
+                || defaultLocale.toString().contains("sv_SE")
+                || defaultLocale.toString().contains("tr_TR"))
     }
 }
