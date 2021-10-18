@@ -1,50 +1,38 @@
 package com.openclassrooms.realestatemanager.ui.activities
 
-import android.app.DatePickerDialog
-import android.content.Context
+
 import android.content.Intent
-import android.graphics.Paint
-import android.graphics.Typeface
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionManager
-import android.util.Log
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.Menu
-import android.view.View
 import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
-import com.google.android.material.slider.RangeSlider
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.Utils
-import com.openclassrooms.realestatemanager.adapters.RecyclerViewAdapter
-import com.openclassrooms.realestatemanager.data.cache.ListingEntity
+import com.openclassrooms.realestatemanager.databinding.LoanSimulatorScreenBinding
 import com.openclassrooms.realestatemanager.ui.fragments.AllListingsFragment
 import com.openclassrooms.realestatemanager.ui.fragments.ListingFormFragment
 import com.openclassrooms.realestatemanager.ui.fragments.MapFragment
 import com.openclassrooms.realestatemanager.ui.fragments.ViewAndUpdateListingFragment
-import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.filter_screen.*
 import kotlinx.android.synthetic.main.fragment_all_listings.*
-import org.w3c.dom.Text
-import java.util.*
-import kotlin.collections.ArrayList
-import org.koin.android.viewmodel.ext.android.sharedViewModel
-import org.koin.android.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    private var binding: LoanSimulatorScreenBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val view = layoutInflater.inflate(R.layout.loan_simulator_screen, null)
+        binding = LoanSimulatorScreenBinding.bind(view)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         showOnlineStatus()
@@ -86,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         val userEmailItem = menu?.findItem(R.id.userEmailItem)
         userEmailItem?.title = firebaseAuth.currentUser?.email?.toString() ?: "Guest"
         val logoutItem = menu?.findItem(R.id.logoutItem)
+        val loanSimulatorItem = menu?.findItem(R.id.loanSimulatorItem)
         if (firebaseAuth.currentUser?.email?.toString().isNullOrEmpty()) {
             logoutItem?.title = "Login"
         }
@@ -99,7 +88,48 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             true
         }
+
+        loanSimulatorItem?.setOnMenuItemClickListener {
+            val popupWindow = PopupWindow(
+                    binding?.root,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+            )
+
+            setUpPopupWindow(popupWindow)
+            popupWindow.isFocusable = true
+            setUpLoanHints()
+            popupWindow.update()
+            binding?.cancelLoanCalculatorButton?.setOnClickListener {
+                popupWindow.dismiss()
+            }
+            binding?.calculateLoanButton?.setOnClickListener {
+                val propertyPrice = binding?.loanPropertyPriceEditText?.text.toString().toInt()
+                val downPayment = binding?.loanDownPaymentEditText?.text.toString().toInt()
+                val howManyMonths = binding?.loanNumberOfYearsEdittext?.text.toString().toInt() * 12
+                val interestRatePercent = binding?.loanInterestRateEditText?.text.toString().toInt()
+
+                val percent = interestRatePercent.toDouble() / 100
+                val totalInterestBeingPaid = propertyPrice * percent
+
+                val totalLoanAmount = propertyPrice + totalInterestBeingPaid - downPayment
+                val monthlyPayment = totalLoanAmount / howManyMonths
+                val finalMonthlyPaymentSummary = euroOrDollar() + monthlyPayment.toString() + "/month for " + howManyMonths.toString() + " months"
+
+                binding?.totalInterestBeingPaidDisplay?.text = euroOrDollar() + totalInterestBeingPaid.toString()
+                binding?.totalLoanAmountDisplay?.text = euroOrDollar() + totalLoanAmount.toString()
+                binding?.monthlyPaymentDisplay?.text = finalMonthlyPaymentSummary
+            }
+            true
+        }
         return super.onCreateOptionsMenu(menu)
+    }
+
+    private fun setUpLoanHints() {
+        if (Utils.doesLocaleSubscribeToEuroCurrency()) {
+            binding?.loanPropertyPriceEditText?.hint = R.string.price_of_property_euro.toString()
+            binding?.loanDownPaymentEditText?.hint = R.string.down_payment_euro.toString()
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -160,5 +190,38 @@ class MainActivity : AppCompatActivity() {
     private fun Snackbar.withColor(@ColorInt colorInt: Int): Snackbar {
         this.view.setBackgroundColor(colorInt)
         return this
+    }
+
+    private fun setUpPopupWindow(popupWindow: PopupWindow) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            popupWindow.elevation = 10.0F
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val slideIn = Slide()
+            slideIn.slideEdge = Gravity.TOP
+            popupWindow.enterTransition = slideIn
+
+            val slideOut = Slide()
+            slideOut.slideEdge = Gravity.RIGHT
+            popupWindow.exitTransition = slideOut
+        }
+
+        TransitionManager.beginDelayedTransition(allListingsConstraintLayout)
+        popupWindow.showAtLocation(
+                allListingsConstraintLayout,
+                Gravity.CENTER,
+                0,
+                0
+        )
+    }
+
+    private fun euroOrDollar(): String {
+        if (Utils.doesLocaleSubscribeToEuroCurrency()) {
+            return  "\u20ac"
+        }
+        else {
+            return "$"
+        }
     }
 }

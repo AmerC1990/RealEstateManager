@@ -16,6 +16,12 @@
         android:icon="@drawable/logouticon"></item>
 
     <item
+        android:id="@+id/loanSimulatorItem"
+        android:title="@string/loan_simulator"
+        app:showAsAction="never"
+        android:icon="@drawable/loan_simulator_icon"></item>
+
+    <item
         android:id="@+id/action_search"
         android:icon="@drawable/search_icon"
         app:actionViewClass="androidx.appcompat.widget.SearchView"

@@ -10,11 +10,12 @@
     <string name="address">   Address</string>
     <string name="status">    Status </string>
     <string name="add_listing">Add Listing</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="type_of_listing">Select Type of Listing</string>
     <string name="price_of_property_usd">Price of property (USD)</string>
     <string name="price_of_property_euro">Price of property (EURO)</string>
+    <string name="down_payment_usd">Down Payment (USD)</string>
+    <string name="down_payment_euro">Down Payment (EURO)</string>
     <string name="enter_surface_area_in_m2">Surface Area</string>
     <string name="number_of_rooms">  Number Of rooms </string>
     <string name="description_of_listing">Description of Listing</string>
@@ -65,4 +66,16 @@
     <string name="denied_permission_string">Location permission is required to view your location, please enable it in settings</string>
     <string name="reset_filters">Reset filters</string>
     <string name="sign_in_as_guest">SIGN IN AS GUEST</string>
+    <string name="loan_simulator_title">Loan Simulator</string>
+    <string name="loan_property_price">Property Price</string>
+    <string name="down_payment">Down Payment</string>
+    <string name="loan_number_of_years">Number of Years</string>
+    <string name="interest_rate">Interest Rate</string>
+    <string name="percent_symbol">%</string>
+    <string name="calculate">Calculate</string>
+    <string name="cancel">Cancel</string>
+    <string name="total_loan_amount">Total Loan Amount:</string>
+    <string name="total_interest_being_paid">Total Interest Being Paid:</string>
+    <string name="monthly_payment">Monthly Payment:</string>
+    <string name="loan_simulator">Loan Simulator</string>
 </resources>
