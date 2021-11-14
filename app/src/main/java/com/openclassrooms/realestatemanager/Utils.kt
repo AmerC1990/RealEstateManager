@@ -107,4 +107,13 @@ object Utils {
                 || defaultLocale.toString().contains("sv_SE")
                 || defaultLocale.toString().contains("tr_TR"))
     }
+
+     fun euroOrDollar(): String {
+        return if (Utils.doesLocaleSubscribeToEuroCurrency()) {
+            "\u20ac"
+        }
+        else {
+            "$"
+        }
+    }
 }

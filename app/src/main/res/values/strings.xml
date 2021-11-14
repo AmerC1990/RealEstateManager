@@ -13,6 +13,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="type_of_listing">Select Type of Listing</string>
     <string name="price_of_property_usd">Price of property (USD)</string>
+    <string name="price_of_property_usd_short">Price (USD)</string>
     <string name="price_of_property_euro">Price of property (EURO)</string>
     <string name="down_payment_usd">Down Payment (USD)</string>
     <string name="down_payment_euro">Down Payment (EURO)</string>
@@ -78,4 +79,7 @@
     <string name="total_interest_being_paid">Total Interest Being Paid:</string>
     <string name="monthly_payment">Monthly Payment:</string>
     <string name="loan_simulator">Loan Simulator</string>
+    <string name="dollar_symbol">$</string>
+    <string name="euro_symbol">€</string>
+
 </resources>

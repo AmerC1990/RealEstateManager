@@ -2,26 +2,21 @@ package com.openclassrooms.realestatemanager.adapters
 
 import android.graphics.Color
 import android.os.Bundle
-import android.provider.Settings.Global.getString
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.firebase.storage.FirebaseStorage
 import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
-import com.openclassrooms.realestatemanager.ui.fragments.ListingFormFragment
 import com.openclassrooms.realestatemanager.ui.fragments.ViewAndUpdateListingFragment
-import kotlinx.android.synthetic.main.fragment_listing_form.*
 import kotlinx.android.synthetic.main.listing_row.view.*
 
-class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>() {
+class RecyclerViewAdapterTablet: RecyclerView.Adapter<RecyclerViewAdapterTablet.Viewholder>() {
 
     var items = ArrayList<ListingEntity>()
 
@@ -30,7 +25,7 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Viewholder {
-        val inflater = LayoutInflater.from(parent.context).inflate(R.layout.listing_row, parent, false)
+        val inflater = LayoutInflater.from(parent.context).inflate(R.layout.listing_row_tablet, parent, false)
         return Viewholder(inflater)
     }
 
@@ -51,7 +46,6 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
         private val mapImageView: ImageView = view.mapImageView
 
         fun bind(data: ListingEntity) {
-            Log.d("debugmobile", "regular adapter bind")
             statusTextview.text = data.status
             if (statusTextview.text.toString().contains("For Sale")) {
                 statusTextview.setTextColor(Color.parseColor("#20AA32"))
@@ -61,9 +55,9 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
                     !statusTextview.text.toString().contains("Sold",ignoreCase = true)) {
                 statusTextview.text = ""
             }
-            addressTextview.text = String.format("\n" + addressTextview.context.getString(R.string.address) + ":  " + "\n" + "\n" + data.address)
-            numberOfRoomsTextview.text = String.format("\n" + numberOfRoomsTextview.context.getString(R.string.number_of_rooms) + ": " + "\n" + "\n" + data.numberOfRooms)
-            surfaceAreaTextview.text = String.format("\n" + surfaceAreaTextview.context.getString(R.string.surface) + ": " + "\n" + "\n" + data.surfaceArea)
+            addressTextview.text = String.format( addressTextview.context.getString(R.string.address) + ":  " + data.address)
+            numberOfRoomsTextview.text = String.format( numberOfRoomsTextview.context.getString(R.string.number_of_rooms) + ": " + "\n" + "\n" + data.numberOfRooms)
+            surfaceAreaTextview.text = String.format( surfaceAreaTextview.context.getString(R.string.surface) + ": " + "\n" + "\n" + data.surfaceArea)
 
             val allPhotoUrls = listOf(data.photoReference,
                     data.photoReference2,
@@ -104,21 +98,15 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
                 val activity = itemView.context as AppCompatActivity
 
                 val transaction = activity.supportFragmentManager.beginTransaction()
-                if (activity.findViewById<FrameLayout>(R.id.fragmentContainer) != null) {
-                    val fragment = ViewAndUpdateListingFragment()
-                    fragment.arguments = bundle
-                    transaction.replace(R.id.fragmentContainer, fragment)
-                    transaction.addToBackStack(null)
-                    transaction.commit()
-                }
-                if (activity.findViewById<FrameLayout>(R.id.containerForListingDetails) != null) {
-                    val fragment = ViewAndUpdateListingFragment()
-                    fragment.arguments = bundle
-                    transaction.replace(R.id.containerForListingDetails, fragment)
-                    transaction.addToBackStack(null)
-                    transaction.commit()
-                }
+                val fragment = ViewAndUpdateListingFragment()
+                fragment.arguments = bundle
+                transaction.replace(R.id.fragmentContainer, fragment)
+                transaction.addToBackStack(null)
+                transaction.commit()
+
             }
+
         }
     }
+
 }

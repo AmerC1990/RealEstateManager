@@ -5,10 +5,12 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Patterns
 import android.view.View
@@ -27,11 +29,13 @@ import kotlinx.android.synthetic.main.activity_login.*
 class LoginActivity : AppCompatActivity() {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private val REQUEST_CODE = 101
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        setUpLoginLayout()
         checkAndRequestLocationPermission()
         FirebaseApp.initializeApp(this)
+        redirectIfLoggedIn()
         val animation = AnimationUtils.loadAnimation(this, R.anim.scale_up)
 
         createAccountButton.setOnClickListener {
@@ -53,7 +57,56 @@ class LoginActivity : AppCompatActivity() {
         loginAsGuestButton.setOnClickListener {
             loginAsGuest()
         }
+    }
 
+    private fun setUpLoginLayout() {
+        if (getDeviceInfo(applicationContext, Device.DEVICE_TYPE) == "Tablet") {
+            setContentView(R.layout.login_activity_tablet)
+        }
+        else if (getDeviceInfo(applicationContext, Device.DEVICE_TYPE) == "Mobile") {
+            setContentView(R.layout.activity_login)
+        }
+    }
+
+    enum class Device {
+        DEVICE_TYPE
+    }
+
+    private fun getDeviceInfo(context: Context, device: Device?): String? {
+        try {
+            when (device) {
+                Device.DEVICE_TYPE -> return if (isTablet(context)) {
+                    if (getDevice5Inch(context)) {
+                        "Tablet"
+                    } else {
+                        "Mobile"
+                    }
+                } else {
+                    "Mobile"
+                }
+                else -> {
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+    private fun getDevice5Inch(context: Context): Boolean {
+        return try {
+            val displayMetrics: DisplayMetrics = context.resources.displayMetrics
+            val yinch = displayMetrics.heightPixels / displayMetrics.ydpi
+            val xinch = displayMetrics.widthPixels / displayMetrics.xdpi
+            val diagonalinch = Math.sqrt((xinch * xinch + yinch * yinch).toDouble())
+            diagonalinch >= 7
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun isTablet(context: Context): Boolean {
+        return context.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK >= Configuration.SCREENLAYOUT_SIZE_LARGE
     }
 
     private fun login() {
@@ -157,6 +210,15 @@ class LoginActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this,
                     arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
                     REQUEST_CODE)
+        }
+    }
+
+    private fun redirectIfLoggedIn() {
+        if(!firebaseAuth.currentUser?.email?.toString().isNullOrEmpty()) {
+            login_constraint_layout.visibility = View.INVISIBLE
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("justLoggedIn", "justLoggedIn")
+            startActivity(intent)
         }
     }
 }

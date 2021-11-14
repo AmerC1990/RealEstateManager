@@ -1,10 +1,13 @@
 package com.openclassrooms.realestatemanager.ui.fragments
 
 import android.app.DatePickerDialog
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionManager
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.widget.ArrayAdapter
@@ -22,7 +25,6 @@ import com.openclassrooms.realestatemanager.R
 import com.openclassrooms.realestatemanager.Utils
 import com.openclassrooms.realestatemanager.adapters.RecyclerViewAdapter
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
-import com.openclassrooms.realestatemanager.databinding.FilterScreenBinding
 import com.openclassrooms.realestatemanager.filter.FilterParams
 import com.openclassrooms.realestatemanager.filter.SearchParams
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
@@ -33,12 +35,21 @@ import org.koin.android.viewmodel.ext.android.sharedViewModel
 import java.util.*
 
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
+import com.openclassrooms.realestatemanager.Utils.euroOrDollar
+import com.openclassrooms.realestatemanager.adapters.RecyclerViewAdapterTablet
+import com.openclassrooms.realestatemanager.databinding.FilterScreenBinding
+import com.openclassrooms.realestatemanager.databinding.FilterScreenTabletBinding
+import com.openclassrooms.realestatemanager.ui.activities.LoginActivity
+import com.openclassrooms.realestatemanager.ui.activities.MainActivity
 import kotlinx.coroutines.delay
 import kotlin.collections.ArrayList
 
 class AllListingsFragment : Fragment() {
     lateinit var recyclerViewAdapter: RecyclerViewAdapter
+    lateinit var recyclerViewAdapterTablet: RecyclerViewAdapterTablet
+
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val viewModel by sharedViewModel<ListingsViewModel>()
@@ -49,9 +60,25 @@ class AllListingsFragment : Fragment() {
         setHasOptionsMenu(true)
         val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
         actionBar.setDisplayHomeAsUpEnabled(false)
-        val view = inflater.inflate(R.layout.filter_screen, null)
-        binding = FilterScreenBinding.bind(view)
+        setupFilterScreenLayout(inflater)
         return inflater.inflate(R.layout.fragment_all_listings, container, false)
+    }
+
+    private fun setupFilterScreenLayout(inflater: LayoutInflater) {
+        if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            val view = inflater.inflate(R.layout.filter_screen_tablet, null)
+            binding = FilterScreenBinding.bind(view)
+        }
+        else if(activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            val view = inflater.inflate(R.layout.filter_screen_tablet_landscape, null)
+            binding = FilterScreenBinding.bind(view)
+        }
+        else if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Mobile") {
+            val view = inflater.inflate(R.layout.filter_screen, null)
+            binding = FilterScreenBinding.bind(view)
+        }
     }
 
     override fun onStart() {
@@ -171,6 +198,7 @@ class AllListingsFragment : Fragment() {
     }
 
     private fun setUpSliders() {
+        binding?.priceSliderTitle?.text = getString(R.string.price) + " (" + euroOrDollar() + ")"
         binding?.priceSlider?.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
             binding?.priceMinTextview?.text = rangeSlider.values[0].toString() + "0"
             binding?.priceMaxTextview?.text = rangeSlider.values[1].toString() + "0"
@@ -281,8 +309,15 @@ class AllListingsFragment : Fragment() {
                         if (allListingsProgressBar != null) {
                             allListingsProgressBar.visibility = View.GONE
                         }
-                        recyclerViewAdapter.setListData(uiState.listing as ArrayList<ListingEntity>)
-                        recyclerViewAdapter.notifyDataSetChanged()
+                        if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" && resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                            recyclerViewAdapterTablet.setListData(uiState.listing as ArrayList<ListingEntity>)
+                            recyclerViewAdapterTablet.notifyDataSetChanged()
+                        }
+                        else  {
+                            recyclerViewAdapter.setListData(uiState.listing as ArrayList<ListingEntity>)
+                            recyclerViewAdapter.notifyDataSetChanged()
+                        }
+
 
                     }
                     is ListingsViewModel.ListingState.Error -> {
@@ -297,22 +332,90 @@ class AllListingsFragment : Fragment() {
     }
 
     private fun changeFragment(fragment: Fragment) {
-        activity?.supportFragmentManager?.beginTransaction()?.apply {
-            replace(R.id.fragmentContainer, fragment)
-                    .addToBackStack(null)
-            commit()
+        if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            activity?.supportFragmentManager?.beginTransaction()?.apply {
+                replace(R.id.containerForAllListings, fragment)
+                        .addToBackStack(null)
+                commit()
+            }
         }
+        else {
+            activity?.supportFragmentManager?.beginTransaction()?.apply {
+                replace(R.id.fragmentContainer, fragment)
+                        .addToBackStack(null)
+                commit()
+            }
+        }
+
     }
 
     private fun initRecyclerview() {
-        recyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            recyclerViewAdapter = RecyclerViewAdapter()
-            adapter = recyclerViewAdapter
-            val divider = DividerItemDecoration(requireContext(), LinearLayout.VERTICAL)
-            divider.setDrawable(context.resources.getDrawable(R.drawable.list_divider))
-            addItemDecoration(divider)
+        if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            recyclerView.apply {
+                layoutManager = LinearLayoutManager(requireContext())
+                recyclerViewAdapter = RecyclerViewAdapter()
+                recyclerViewAdapterTablet = RecyclerViewAdapterTablet()
+                adapter = recyclerViewAdapterTablet
+                val divider = DividerItemDecoration(requireContext(), LinearLayout.VERTICAL)
+                divider.setDrawable(context.resources.getDrawable(R.drawable.list_divider))
+                addItemDecoration(divider)
+            }
         }
+        else {
+            recyclerView.apply {
+                layoutManager = LinearLayoutManager(requireContext())
+                recyclerViewAdapterTablet = RecyclerViewAdapterTablet()
+                recyclerViewAdapter = RecyclerViewAdapter()
+                adapter = recyclerViewAdapter
+                val divider = DividerItemDecoration(requireContext(), LinearLayout.VERTICAL)
+                divider.setDrawable(context.resources.getDrawable(R.drawable.list_divider))
+                addItemDecoration(divider)
+            }
+        }
+
+    }
+
+    enum class Device {
+        DEVICE_TYPE
+    }
+
+    private fun getDeviceInfo(context: Context, device: Device?): String? {
+        try {
+            when (device) {
+                Device.DEVICE_TYPE -> return if (isTablet(context)) {
+                    if (getDevice5Inch(context)) {
+                        "Tablet"
+                    } else {
+                        "Mobile"
+                    }
+                } else {
+                    "Mobile"
+                }
+                else -> {
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+    private fun getDevice5Inch(context: Context): Boolean {
+        return try {
+            val displayMetrics: DisplayMetrics = context.resources.displayMetrics
+            val yinch = displayMetrics.heightPixels / displayMetrics.ydpi
+            val xinch = displayMetrics.widthPixels / displayMetrics.xdpi
+            val diagonalinch = Math.sqrt((xinch * xinch + yinch * yinch).toDouble())
+            diagonalinch >= 7
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun isTablet(context: Context): Boolean {
+        return context.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK >= Configuration.SCREENLAYOUT_SIZE_LARGE
     }
 
     private fun overrideOnBackPressed() {

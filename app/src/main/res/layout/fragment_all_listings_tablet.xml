@@ -8,19 +8,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.fragments.AllListingsFragment">
 
-        <ProgressBar
-            android:visibility="gone"
-            android:elevation="30dp"
-            android:indeterminateTint="@color/colorPrimaryDark"
-            android:id="@+id/allListingsProgressBar"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="137dp"
-            android:layout_height="145dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.452" />
+    <ProgressBar
+        android:visibility="gone"
+        android:elevation="30dp"
+        android:indeterminateTint="@color/colorPrimaryDark"
+        android:id="@+id/allListingsProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="197dp"
+        android:layout_height="205dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.452" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

@@ -3,11 +3,13 @@ package com.openclassrooms.realestatemanager.ui.fragments
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.DisplayMetrics
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -18,7 +20,6 @@ import android.widget.*
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
@@ -31,8 +32,6 @@ import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.receiver.AlarmReceiver
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import com.openclassrooms.realestatemanager.viewmodels.SingleListingViewModel
-import kotlinx.android.synthetic.main.fragment_all_listings.*
-import kotlinx.android.synthetic.main.fragment_listing_form.*
 import kotlinx.android.synthetic.main.fragment_view_and_update_listing.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
@@ -56,13 +55,58 @@ class ViewAndUpdateListingFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
         actionBar.setDisplayHomeAsUpEnabled(true)
-        return inflater.inflate(R.layout.fragment_view_and_update_listing, container, false)
+        return if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet") {
+            inflater.inflate(R.layout.fragment_view_and_update_listing_tablet, container, false)
+        }
+        else {
+            inflater.inflate(R.layout.fragment_view_and_update_listing, container, false)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         overrideOnBackPressed()
         createNotificationChannel()
+    }
+    enum class Device {
+        DEVICE_TYPE
+    }
+
+    private fun getDeviceInfo(context: Context, device: Device?): String? {
+        try {
+            when (device) {
+                Device.DEVICE_TYPE -> return if (isTablet(context)) {
+                    if (getDevice5Inch(context)) {
+                        "Tablet"
+                    } else {
+                        "Mobile"
+                    }
+                } else {
+                    "Mobile"
+                }
+                else -> {
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+    private fun getDevice5Inch(context: Context): Boolean {
+        return try {
+            val displayMetrics: DisplayMetrics = context.resources.displayMetrics
+            val yinch = displayMetrics.heightPixels / displayMetrics.ydpi
+            val xinch = displayMetrics.widthPixels / displayMetrics.xdpi
+            val diagonalinch = Math.sqrt((xinch * xinch + yinch * yinch).toDouble())
+            diagonalinch >= 7
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun isTablet(context: Context): Boolean {
+        return context.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK >= Configuration.SCREENLAYOUT_SIZE_LARGE
     }
 
     override fun onStart() {
@@ -78,6 +122,7 @@ class ViewAndUpdateListingFragment : Fragment() {
         val id = arguments?.getString("listing_id", null)
         if (Utils.isOnline(requireContext())) {
             if (!id.isNullOrEmpty()) {
+                Log.d("single", id)
                 singleListingViewModel.getSingleListing(id.toInt())
             }
             buttonEditListingUpdate.setOnClickListener {

@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ProgressBar
+        android:elevation="30dp"
+        android:visibility="gone"
+        android:indeterminateTint="@color/colorPrimaryDark"
+        android:id="@+id/updateListingProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="137dp"
+        android:layout_height="145dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.452" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.fragments.ViewAndUpdateListingFragment">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:visibility="gone"
+                    android:id="@+id/addImageIconUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="400dp"
+                    android:layout_margin="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:adjustViewBounds="true"
+                    android:background="@color/myLightGrey"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:src="@drawable/plus_icon" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImageUpdate"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteFirstPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage2Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteSecondPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage3Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteThirdPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage4Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteFourthPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage5Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteFifthPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage6Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteSixthPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage7Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteSeventhPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage8Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteEighthPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage9Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteNinthPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:scaleType="fitXY"
+                    android:visibility="gone"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/imageViewChooseImage10Update"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:paddingBottom="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="400dp" />
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:paddingTop="0dp"
+                    android:src="@drawable/deletebutton"
+                    android:visibility="gone"
+                    android:id="@+id/deleteTenthPhotoUpdate"
+                    android:layout_marginTop="0dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextEnterImageDescriptionUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/image_description"
+                    android:inputType="textMultiLine"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack" />
+
+                <Spinner
+                    style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                    android:id="@+id/typeOfListingSpinnerUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="20dp"
+                    android:layout_marginTop="0dp" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextEnterPriceUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/price_of_property_usd"
+                    android:inputType="number"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextEnterSurfaceAreaUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/enter_surface_area_in_m2"
+                    android:inputType="number"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextEnterNumberOfRoomsUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/number_of_rooms"
+                    android:inputType="number"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextEnterDescriptionUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/description_of_listing"
+                    android:inputType="textMultiLine"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextEnterAddressUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/address_city_state_country"
+                    android:inputType="textMultiLine"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:text="@string/points_of_interest"
+                    android:textColor="@color/myBlack"
+                    android:textSize="18sp"
+                    android:textAlignment="textStart"
+                    android:id="@+id/textviewEnterPointsOfInterestUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:layout_marginBottom="0dp"
+                    android:paddingBottom="0dp"
+                    android:inputType="textMultiLine"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp" />
+
+                <CheckBox
+                    android:paddingTop="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:id="@+id/restaurantCheckboxUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/restaurant"
+                    android:textSize="14sp" />
+
+                <CheckBox
+                    android:id="@+id/hospitalCheckboxUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:text="@string/hospital"
+                    android:textSize="14sp" />
+
+                <CheckBox
+                    android:id="@+id/parkCheckboxUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:text="@string/park"
+                    android:textSize="14sp" />
+
+                <CheckBox
+                    android:id="@+id/barCheckboxUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:text="@string/bar"
+                    android:textSize="14sp" />
+
+                <CheckBox
+                    android:id="@+id/schoolCheckboxUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:text="@string/school"
+                    android:textSize="14sp" />
+
+                <Spinner
+                    style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                    android:id="@+id/statusOfPropertySpinnerUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="20dp"
+                    android:layout_marginTop="0dp" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:gravity="start"
+                    android:id="@+id/editTextEnterDatePutOnMarketUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/date_put_on_market"
+                    android:inputType="date"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack"
+                    android:drawableStart="@drawable/date_picker" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:gravity="start"
+                    android:id="@+id/editTextEnterSaleDateUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/date_sold_hint"
+                    android:inputType="date"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack"
+                    android:drawableStart="@drawable/date_picker" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextEnterNameOfAgentUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:enabled="false"
+                    android:hint="@string/name_of_real_estate_agent_selling_property"
+                    android:inputType="textMultiLine"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/myBlack" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonEditListingUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:backgroundTint="@color/myOrange"
+                    android:text="@string/edit_listing"
+                    android:textColor="@color/myWhite" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:visibility="gone"
+                    android:id="@+id/buttonSaveListingUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:backgroundTint="@color/myGreen"
+                    android:clickable="false"
+                    android:enabled="false"
+                    android:text="@string/save_listing"
+                    android:textColor="@color/myWhite" />
+
+            </LinearLayout>
+
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,7 +5,7 @@ import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class ListingRepositoryImplementation(private val listingCache: ListingCache): ListingRepository {
+class  ListingRepositoryImplementation(private val listingCache: ListingCache): ListingRepository {
 
     override suspend fun getAllListings(): Flow<List<ListingEntity>> {
         return listingCache.getAllListings()

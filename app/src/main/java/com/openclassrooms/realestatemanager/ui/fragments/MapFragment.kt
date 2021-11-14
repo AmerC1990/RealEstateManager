@@ -6,6 +6,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -14,6 +15,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.transition.Slide
 import android.transition.TransitionManager
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -34,10 +36,12 @@ import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.slider.RangeSlider
 import com.openclassrooms.realestatemanager.R
+import com.openclassrooms.realestatemanager.Utils
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.databinding.FilterScreenBinding
 import com.openclassrooms.realestatemanager.filter.FilterParams
 import com.openclassrooms.realestatemanager.filter.SearchParams
+import com.openclassrooms.realestatemanager.ui.activities.MainActivity
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import kotlinx.android.synthetic.main.fragment_all_listings.*
 import kotlinx.android.synthetic.main.fragment_map.*
@@ -60,9 +64,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         setHasOptionsMenu(true)
         val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
         actionBar.setDisplayHomeAsUpEnabled(false)
-        val view = inflater.inflate(R.layout.filter_screen, null)
-        binding = FilterScreenBinding.bind(view)
-        return inflater.inflate(R.layout.fragment_map, container, false)
+        setupFilterScreenLayout(inflater)
+        return if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet") {
+            inflater.inflate(R.layout.fragment_map_tablet, container, false)
+
+        }
+        else {
+            inflater.inflate(R.layout.fragment_map, container, false)
+        }
+    }
+
+    private fun setupFilterScreenLayout(inflater: LayoutInflater) {
+        if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet") {
+            val view = inflater.inflate(R.layout.filter_screen_tablet, null)
+            binding = FilterScreenBinding.bind(view)
+        }
+        else if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Mobile") {
+            val view = inflater.inflate(R.layout.filter_screen, null)
+            binding = FilterScreenBinding.bind(view)
+        }
     }
 
     override fun onStart() {
@@ -220,6 +240,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setUpSliders() {
+        binding?.priceSliderTitle?.text = getString(R.string.price) + " (" + Utils.euroOrDollar() + ")"
         binding?.priceSlider?.addOnChangeListener { rangeSlider: RangeSlider, fl: Float, b: Boolean ->
             binding?.priceMinTextview?.text = rangeSlider.values[0].toString() + "0"
             binding?.priceMaxTextview?.text = rangeSlider.values[1].toString() + "0"
@@ -232,6 +253,47 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             binding?.photosMinTextview?.text = rangeSlider.values[0].toString().substringBefore(".")
             binding?.photosMaxTextview?.text = rangeSlider.values[1].toString().substringBefore(".")
         }
+    }
+
+    enum class Device {
+        DEVICE_TYPE
+    }
+
+    private fun getDeviceInfo(context: Context, device: Device?): String? {
+        try {
+            when (device) {
+                Device.DEVICE_TYPE -> return if (isTablet(context)) {
+                    if (getDevice5Inch(context)) {
+                        "Tablet"
+                    } else {
+                        "Mobile"
+                    }
+                } else {
+                    "Mobile"
+                }
+                else -> {
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+    private fun getDevice5Inch(context: Context): Boolean {
+        return try {
+            val displayMetrics: DisplayMetrics = context.resources.displayMetrics
+            val yinch = displayMetrics.heightPixels / displayMetrics.ydpi
+            val xinch = displayMetrics.widthPixels / displayMetrics.xdpi
+            val diagonalinch = Math.sqrt((xinch * xinch + yinch * yinch).toDouble())
+            diagonalinch >= 7
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun isTablet(context: Context): Boolean {
+        return context.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK >= Configuration.SCREENLAYOUT_SIZE_LARGE
     }
 
     private fun setUpDatePickers() {
@@ -409,58 +471,74 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun setMarkersAndClickListeners(filteredData: List<ListingEntity>) {
         map.clear()
-        val builder = LatLngBounds.builder()
-        for (item in filteredData) {
-            if (item.address.isNotEmpty()) {
-                val geocoder = Geocoder(requireContext(), Locale.getDefault())
-                val address = geocoder.getFromLocationName(item.address, 1)
-                var markers: Marker?
-                for (element in address) {
-                    val latLng = LatLng(element.latitude, element.longitude)
-                    markers = map.addMarker(
-                            latLng.let {
-                                MarkerOptions().position(it)
-                                        .title(item.address)
-                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+            val builder = LatLngBounds.builder()
+            for (item in filteredData) {
+                if (item.address.isNotEmpty()) {
+                    val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                    val address = geocoder.getFromLocationName(item.address, 1)
+                            var markers: Marker?
+                            for (element in address) {
+                                val latLng = LatLng(element.latitude, element.longitude)
+                            markers = map.addMarker(
+                                    latLng.let {
+                                        MarkerOptions().position(it)
+                                                .title(item.address)
+                                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                                    }
+                            )
+                            builder.include(markers.position)
+                            val bounds = builder.build()
+                            val width = resources.displayMetrics.widthPixels
+                            val height = resources.displayMetrics.heightPixels
+                            val padding = (width * 0.10).toInt()
+                            val cameraUpdate = CameraUpdateFactory.newLatLngBounds(
+                                    bounds,
+                                    width,
+                                    height,
+                                    padding
+                            )
+                            map.animateCamera(cameraUpdate)
+                            geolocalizationButton?.setOnClickListener {
+                                map.animateCamera(cameraUpdate)
                             }
-                    )
-                    builder.include(markers.position)
-                    val bounds = builder.build()
-                    val width = resources.displayMetrics.widthPixels
-                    val height = resources.displayMetrics.heightPixels
-                    val padding = (width * 0.10).toInt()
-                    val cameraUpdate = CameraUpdateFactory.newLatLngBounds(
-                            bounds,
-                            width,
-                            height,
-                            padding
-                    )
-                    map.animateCamera(cameraUpdate)
-                    geolocalizationButton?.setOnClickListener {
-                        map.animateCamera(cameraUpdate)
-                    }
-                }
-            }
-            map.setOnMarkerClickListener { it ->
-                val markerName = it.title
-                if (markerName?.toString() == "My Location") {
-                    it.showInfoWindow()
-                } else {
-                    val fragment = ViewAndUpdateListingFragment()
-                    val transaction = activity?.supportFragmentManager?.beginTransaction()
-                    val bundle = Bundle()
-                    for (listings in filteredData) {
-                        if (listings.address == markerName) {
-                            bundle.putString("listing_id", listings.id.toString())
-                            fragment.arguments = bundle
-                            transaction?.replace(R.id.fragmentContainer, fragment)
-                            transaction?.addToBackStack(null)
-                            transaction?.commit()
                         }
+                        map.setOnMarkerClickListener { it ->
+                            val markerName = it.title
+                            if (markerName?.toString() == "My Location") {
+                                it.showInfoWindow()
+                            } else {
+                                val fragment = ViewAndUpdateListingFragment()
+                                val transaction = activity?.supportFragmentManager?.beginTransaction()
+                                val bundle = Bundle()
+                                if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                                        resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                                    for (listings in filteredData) {
+                                        if (listings.address == markerName) {
+                                            bundle.putString("listing_id", listings.id.toString())
+                                            fragment.arguments = bundle
+                                            transaction?.replace(R.id.containerForListingDetails, fragment)
+                                            transaction?.addToBackStack(null)
+                                            transaction?.commit()
+                                        }
+                                    }
+                                }
+                                else {
+                                    for (listings in filteredData) {
+                                        if (listings.address == markerName) {
+                                            bundle.putString("listing_id", listings.id.toString())
+                                            fragment.arguments = bundle
+                                            transaction?.replace(R.id.fragmentContainer, fragment)
+                                            transaction?.addToBackStack(null)
+                                            transaction?.commit()
+                                        }
+                                    }
+                                }
+
+                            }
+                            true
+                        }
+
                     }
-                }
-                true
             }
-        }
     }
 }

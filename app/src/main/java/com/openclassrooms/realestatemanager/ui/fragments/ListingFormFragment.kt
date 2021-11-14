@@ -3,11 +3,13 @@ package com.openclassrooms.realestatemanager.ui.fragments
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -27,6 +29,7 @@ import com.openclassrooms.realestatemanager.Utils.doesLocaleSubscribeToEuroCurre
 import com.openclassrooms.realestatemanager.Utils.isLocaleInAmerica
 import com.openclassrooms.realestatemanager.data.cache.ListingEntity
 import com.openclassrooms.realestatemanager.receiver.AlarmReceiver
+import com.openclassrooms.realestatemanager.ui.activities.MainActivity
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import com.openclassrooms.realestatemanager.viewmodels.SingleListingViewModel
 import kotlinx.android.synthetic.main.fragment_listing_form.*
@@ -57,27 +60,75 @@ class ListingFormFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val actionBar = (activity as AppCompatActivity?)!!.supportActionBar!!
         actionBar.setDisplayHomeAsUpEnabled(true)
-        return inflater.inflate(R.layout.fragment_listing_form, container, false)
+        return if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet") {
+            return inflater.inflate(R.layout.listing_form_fagment_tablet, container, false)
+        }
+        else {
+            return inflater.inflate(R.layout.fragment_listing_form, container, false)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         overrideOnBackPressed()
         createNotificationChannel()
-        if (!doesLocaleSubscribeToEuroCurrency()) {
-            editTextEnterPrice.hint = R.string.price_of_property_euro.toString()
+    }
+
+    enum class Device {
+        DEVICE_TYPE
+    }
+
+    private fun getDeviceInfo(context: Context, device: Device?): String? {
+        try {
+            when (device) {
+                Device.DEVICE_TYPE -> return if (isTablet(context)) {
+                    if (getDevice5Inch(context)) {
+                        "Tablet"
+                    } else {
+                        "Mobile"
+                    }
+                } else {
+                    "Mobile"
+                }
+                else -> {
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+    private fun getDevice5Inch(context: Context): Boolean {
+        return try {
+            val displayMetrics: DisplayMetrics = context.resources.displayMetrics
+            val yinch = displayMetrics.heightPixels / displayMetrics.ydpi
+            val xinch = displayMetrics.widthPixels / displayMetrics.xdpi
+            val diagonalinch = Math.sqrt((xinch * xinch + yinch * yinch).toDouble())
+            diagonalinch >= 7
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun isTablet(context: Context): Boolean {
+        return context.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK >= Configuration.SCREENLAYOUT_SIZE_LARGE
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (doesLocaleSubscribeToEuroCurrency()) {
+            editTextEnterPrice.hint = getString(R.string.price_of_property_euro)
         }
         if (!isLocaleInAmerica()) {
-            editTextEnterDatePutOnMarket.hint = R.string.date_put_on_market_non_american.toString()
-            editTextEnterSaleDate.hint = R.string.date_sold_hint_non_american.toString()
+            editTextEnterDatePutOnMarket.hint =  getString(R.string.date_put_on_market_non_american)
+            editTextEnterSaleDate.hint = getString(R.string.date_sold_hint_non_american)
         }
-
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         setUpDatePickers()
-
 
         val types = resources.getStringArray(R.array.type_of_listing_spinner)
         val statuses = resources.getStringArray(R.array.status_of_property_spinner)
@@ -358,10 +409,20 @@ class ListingFormFragment : Fragment() {
                                     .apply()
                             setAlarm()
                             delay(1500)
-                            activity?.supportFragmentManager?.beginTransaction()?.apply {
-                                replace(R.id.fragmentContainer, AllListingsFragment())
-                                commit()
+                            if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                                    resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                                activity?.supportFragmentManager?.beginTransaction()?.apply {
+                                    replace(R.id.containerForAllListings, AllListingsFragment())
+                                    commit()
+                                }
                             }
+                            else {
+                                activity?.supportFragmentManager?.beginTransaction()?.apply {
+                                    replace(R.id.fragmentContainer, AllListingsFragment())
+                                    commit()
+                                }
+                            }
+
                         }
                     }
                 }
