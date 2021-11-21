@@ -17,7 +17,8 @@
             android:id="@+id/containerForAllListings"
             android:layout_width="370dp"
             android:layout_height="match_parent"
-            android:layout_marginBottom="55dp" />
+            android:layout_marginBottom="55dp"
+            android:elevation="10dp" />
 
         <FrameLayout
             android:id="@+id/containerForListingDetails"

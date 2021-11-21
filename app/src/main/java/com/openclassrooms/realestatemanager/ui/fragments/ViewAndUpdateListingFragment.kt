@@ -33,6 +33,47 @@ import com.openclassrooms.realestatemanager.receiver.AlarmReceiver
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import com.openclassrooms.realestatemanager.viewmodels.SingleListingViewModel
 import kotlinx.android.synthetic.main.fragment_view_and_update_listing.*
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.addImageIconUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.barCheckboxUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.buttonEditListingUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.buttonSaveListingUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteEighthPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteFifthPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteFirstPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteFourthPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteNinthPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteSecondPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteSeventhPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteSixthPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteTenthPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.deleteThirdPhotoUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterAddressUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterDatePutOnMarketUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterDescriptionUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterImageDescriptionUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterNameOfAgentUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterNumberOfRoomsUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterPriceUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterSaleDateUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.editTextEnterSurfaceAreaUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.hospitalCheckboxUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage10Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage2Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage3Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage4Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage5Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage6Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage7Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage8Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImage9Update
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.imageViewChooseImageUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.parkCheckboxUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.restaurantCheckboxUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.schoolCheckboxUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.statusOfPropertySpinnerUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.typeOfListingSpinnerUpdate
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing.updateListingProgressBar
+import kotlinx.android.synthetic.main.fragment_view_and_update_listing_tablet.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.collect
@@ -124,6 +165,19 @@ class ViewAndUpdateListingFragment : Fragment() {
             if (!id.isNullOrEmpty()) {
                 Log.d("single", id)
                 singleListingViewModel.getSingleListing(id.toInt())
+            } else if (id.isNullOrEmpty()) {
+                 if (this.view?.findViewById<TextView>(R.id.pleaseSelectListingTextView) != null) {
+                     pleaseSelectListingTextView.visibility = View.VISIBLE
+                 }
+                if (this.view?.findViewById<LinearLayout>(R.id.listingsDetailsTabletLinearLayout) != null) {
+                    listingsDetailsTabletLinearLayout.visibility = View.GONE
+                }
+                if (this.view?.findViewById<ScrollView>(R.id.listingsDetailsTabletScrollview) != null) {
+                    listingsDetailsTabletScrollview.visibility = View.GONE
+                }
+                if (this.view?.findViewById<ProgressBar>(R.id.updateListingProgressBar) != null) {
+                    updateListingProgressBar.visibility = View.GONE
+                }
             }
             buttonEditListingUpdate.setOnClickListener {
                 buttonEditListingUpdate.startAnimation(animation)
@@ -140,6 +194,19 @@ class ViewAndUpdateListingFragment : Fragment() {
         } else if (!Utils.isOnline(requireContext())) {
             if (!id.isNullOrEmpty()) {
                 singleListingViewModel.getSingleListing(id.toInt())
+            }  else if (id.isNullOrEmpty()) {
+                if (this.view?.findViewById<TextView>(R.id.pleaseSelectListingTextView) != null) {
+                    pleaseSelectListingTextView.visibility = View.VISIBLE
+                }
+                if (this.view?.findViewById<LinearLayout>(R.id.listingsDetailsTabletLinearLayout) != null) {
+                    listingsDetailsTabletLinearLayout.visibility = View.GONE
+                }
+                if (this.view?.findViewById<ScrollView>(R.id.listingsDetailsTabletScrollview) != null) {
+                    listingsDetailsTabletScrollview.visibility = View.GONE
+                }
+                if (this.view?.findViewById<ProgressBar>(R.id.updateListingProgressBar) != null) {
+                    updateListingProgressBar.visibility = View.GONE
+                }
             }
             setListingUpdateButtonVisibility()
         }

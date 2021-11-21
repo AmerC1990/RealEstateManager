@@ -45,6 +45,11 @@ import com.openclassrooms.realestatemanager.ui.activities.MainActivity
 import com.openclassrooms.realestatemanager.viewmodels.ListingsViewModel
 import kotlinx.android.synthetic.main.fragment_all_listings.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.android.synthetic.main.fragment_map.deniedPermissionMessage
+import kotlinx.android.synthetic.main.fragment_map.geolocalizationButton
+import kotlinx.android.synthetic.main.fragment_map.map
+import kotlinx.android.synthetic.main.fragment_map.mapFragmentProgressBar
+import kotlinx.android.synthetic.main.fragment_map_tablet.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.collect
@@ -75,8 +80,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setupFilterScreenLayout(inflater: LayoutInflater) {
-        if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet") {
+        if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
             val view = inflater.inflate(R.layout.filter_screen_tablet, null)
+            binding = FilterScreenBinding.bind(view)
+        }
+        else if(activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            val view = inflater.inflate(R.layout.filter_screen_tablet_landscape, null)
             binding = FilterScreenBinding.bind(view)
         }
         else if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Mobile") {
@@ -199,13 +210,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             slideOut.slideEdge = Gravity.RIGHT
             popupWindow.exitTransition = slideOut
         }
-        TransitionManager.beginDelayedTransition(mapFragment)
-        popupWindow.showAtLocation(
-                mapFragment,
-                Gravity.CENTER,
-                0,
-                0
-        )
+        if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet") {
+            TransitionManager.beginDelayedTransition(mapFragmentTablet)
+            popupWindow.showAtLocation(
+                    mapFragmentTablet,
+                    Gravity.CENTER,
+                    0,
+                    0
+            )
+        }
+        else if (activity?.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Mobile") {
+            TransitionManager.beginDelayedTransition(mapFragment)
+            popupWindow.showAtLocation(
+                    mapFragment,
+                    Gravity.CENTER,
+                    0,
+                    0
+            )
+        }
+
     }
 
     private fun applyFilters() {

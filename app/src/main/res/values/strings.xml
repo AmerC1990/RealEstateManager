@@ -81,5 +81,6 @@
     <string name="loan_simulator">Loan Simulator</string>
     <string name="dollar_symbol">$</string>
     <string name="euro_symbol">€</string>
+    <string name="please_select_listing_string">Please select a listing to view its details</string>
 
 </resources>

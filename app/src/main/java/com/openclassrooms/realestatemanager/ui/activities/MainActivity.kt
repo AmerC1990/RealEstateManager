@@ -7,7 +7,6 @@ import android.content.res.Configuration
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.telephony.TelephonyManager
 import android.transition.Slide
 import android.transition.TransitionManager
 import android.util.DisplayMetrics
@@ -16,6 +15,7 @@ import android.view.Gravity
 import android.view.Menu
 import android.widget.*
 import androidx.annotation.ColorInt
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -32,6 +32,10 @@ import com.openclassrooms.realestatemanager.ui.fragments.ViewAndUpdateListingFra
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.bottomNavigation
 import kotlinx.android.synthetic.main.fragment_all_listings.*
+import kotlinx.android.synthetic.main.fragment_all_listings.allListingsConstraintLayout
+import kotlinx.android.synthetic.main.fragment_all_listings_tablet.*
+import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.android.synthetic.main.fragment_map_tablet.*
 import kotlinx.android.synthetic.main.main_activity_land.*
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -51,9 +55,9 @@ class MainActivity : AppCompatActivity() {
         val mapFragment = MapFragment()
         val allListingsFragment = AllListingsFragment()
         val viewAndUpdateListingFragment = ViewAndUpdateListingFragment()
-        makeCurrentFragment(fragmentAllListings = allListingsFragment)
+        makeCurrentFragment(fragmentAllListings = allListingsFragment, fragmentDetails = viewAndUpdateListingFragment)
         isNotificationReceived(viewAndUpdateListingFragment = viewAndUpdateListingFragment)
-        setUpBottomNavClicks(allListingsFragment = allListingsFragment, mapFragment = mapFragment)
+        setUpBottomNavClicks(allListingsFragment = allListingsFragment, mapFragment = mapFragment, listingDetailsFragment = viewAndUpdateListingFragment)
     }
 
     private fun setupLoanSimulatorLayout() {
@@ -151,11 +155,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun makeCurrentFragment(fragmentAllListings: Fragment) {
+    private fun makeCurrentFragment(fragmentAllListings: Fragment, fragmentDetails: Fragment) {
         if (this.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
                 resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             supportFragmentManager.beginTransaction().apply {
                 replace(R.id.containerForAllListings, fragmentAllListings)
+                commit()
+            }
+            supportFragmentManager.beginTransaction().apply {
+                replace(R.id.containerForListingDetails, fragmentDetails)
                 commit()
             }
         }
@@ -199,6 +207,7 @@ class MainActivity : AppCompatActivity() {
             setUpLoanHints()
             popupWindow.update()
             clearInput()
+
             binding?.cancelLoanCalculatorButton?.setOnClickListener {
                 popupWindow.dismiss()
             }
@@ -275,14 +284,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setUpBottomNavClicks(allListingsFragment: Fragment, mapFragment: Fragment) {
+    private fun setUpBottomNavClicks(allListingsFragment: Fragment, mapFragment: Fragment, listingDetailsFragment: Fragment) {
         bottomNavigation.setOnNavigationItemSelectedListener {
                 when (it.itemId) {
                     R.id.ic_mapview -> {
-                        makeCurrentFragment(mapFragment)
+                        makeCurrentFragment(fragmentAllListings = mapFragment, fragmentDetails = listingDetailsFragment)
                     }
                     R.id.ic_listview -> {
-                        makeCurrentFragment(allListingsFragment)
+                        makeCurrentFragment(fragmentAllListings = allListingsFragment, fragmentDetails = listingDetailsFragment)
                     }
                 }
                 true
@@ -344,15 +353,30 @@ class MainActivity : AppCompatActivity() {
         }
 
         if(this.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Mobile"){
+            Log.d("debuggerz", "line 357")
+                TransitionManager.beginDelayedTransition(mainActivityConstraintLayout)
+                popupWindow.showAtLocation(
+                        mainActivityConstraintLayout,
+                        Gravity.CENTER,
+                        0,
+                        0
+                )
+
+        }else if (this.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                this.findViewById<ConstraintLayout>(R.id.allListingsConstraintLayout) != null) {
+            Log.d("debuggerz", "line 368")
+                        TransitionManager.beginDelayedTransition(allListingsConstraintLayout)
+                        popupWindow.showAtLocation(
+                                allListingsConstraintLayout,
+                                Gravity.CENTER,
+                                0,
+                                0
+                        )
+        }
+        else if (this.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                this.findViewById<FrameLayout>(R.id.mainActivityConstraintLayout) != null) {
+            Log.d("debuggerz", "line 379")
             TransitionManager.beginDelayedTransition(mainActivityConstraintLayout)
-            popupWindow.showAtLocation(
-                    mainActivityConstraintLayout,
-                    Gravity.CENTER,
-                    0,
-                    0
-            )
-        }else {
-            TransitionManager.beginDelayedTransition(allListingsConstraintLayout)
             popupWindow.showAtLocation(
                     allListingsConstraintLayout,
                     Gravity.CENTER,
@@ -360,6 +384,18 @@ class MainActivity : AppCompatActivity() {
                     0
             )
         }
+        else if (this.applicationContext?.let { getDeviceInfo(it, Device.DEVICE_TYPE) } == "Tablet" &&
+                this.findViewById<ConstraintLayout>(R.id.mapFragmentTablet) != null) {
+            Log.d("debuggerz", "this is the one")
+            TransitionManager.beginDelayedTransition(mapFragmentTablet)
+            popupWindow.showAtLocation(
+                    mapFragmentTablet,
+                    Gravity.CENTER,
+                    0,
+                    0
+            )
+        }
+
 
     }
 }

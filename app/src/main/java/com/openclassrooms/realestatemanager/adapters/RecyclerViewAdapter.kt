@@ -112,6 +112,7 @@ class RecyclerViewAdapter: RecyclerView.Adapter<RecyclerViewAdapter.Viewholder>(
                     transaction.commit()
                 }
                 if (activity.findViewById<FrameLayout>(R.id.containerForListingDetails) != null) {
+//                    itemView.setBackgroundColor(Color.parseColor("#B3D8E8"))
                     val fragment = ViewAndUpdateListingFragment()
                     fragment.arguments = bundle
                     transaction.replace(R.id.containerForListingDetails, fragment)
